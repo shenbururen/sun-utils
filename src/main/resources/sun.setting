@@ -1,0 +1,8 @@
+#http请求相关配置
+[http]
+#http工具类连接超时时间 单位 秒
+connectTimeout = 10
+#http工具类请求超时时间 单位 秒
+requestTimeout = 30
+#httpClient最大连接池数量
+maxConnTotal = 200
