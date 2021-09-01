@@ -35,6 +35,13 @@
             <version>2.12.5</version>
             <optional>true</optional>
         </dependency>
+        <!-- JedisUtil 依赖 -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>3.7.0</version>
+            <optional>true</optional>
+        </dependency>
 
 
 
