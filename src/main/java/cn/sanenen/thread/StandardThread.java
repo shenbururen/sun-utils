@@ -4,7 +4,8 @@ import cn.hutool.log.Log;
 
 /**
  * 标准线程类，继承该类，覆写handler方法。
- * @author sun 
+ *
+ * @author sun
  */
 public abstract class StandardThread implements Runnable {
 	protected static final Log log = Log.get();

@@ -8,7 +8,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * 阻塞式线程池<br>
  * 此线程池最大特点：当线程中没有空闲线程时，不调用RejectedExecutionHandler，而是直接处于阻塞状态<br>
- * @author sun 
+ *
+ * @author sun
  */
 public class BlockedThreadPoolExecutor extends ThreadPoolExecutor {
 
@@ -17,22 +18,22 @@ public class BlockedThreadPoolExecutor extends ThreadPoolExecutor {
 	/**
 	 * @param poolSize 线程数量
 	 */
-    public BlockedThreadPoolExecutor(int poolSize) {
-	    super(0, Integer.MAX_VALUE,
-			    60L, TimeUnit.SECONDS,
-			    new SynchronousQueue<>());
-	    semaphore = new Semaphore(poolSize);
-    }
+	public BlockedThreadPoolExecutor(int poolSize) {
+		super(0, Integer.MAX_VALUE,
+				60L, TimeUnit.SECONDS,
+				new SynchronousQueue<>());
+		semaphore = new Semaphore(poolSize);
+	}
 
-	
-    @Override
+
+	@Override
 	public void execute(Runnable command) {
-	    try {
-		    semaphore.acquire();
-		    super.execute(command);
-	    } catch (InterruptedException e) {
-		    e.printStackTrace();
-	    }
+		try {
+			semaphore.acquire();
+			super.execute(command);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

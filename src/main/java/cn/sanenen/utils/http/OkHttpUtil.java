@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  **/
 public class OkHttpUtil {
 	private static final Log log = Log.get();
-	
+
 	private static final long connectTimeout = SunSetting.getConnectTimeout();
 	private static final long requestTimeout = SunSetting.getRequestTimeout();
 
@@ -46,8 +46,8 @@ public class OkHttpUtil {
 	/**
 	 * 发送post请求
 	 *
-	 * @param urlString  网址
-	 * @param paramMap   post表单数据
+	 * @param urlString 网址
+	 * @param paramMap  post表单数据
 	 * @param headerMap 消息头
 	 * @return 返回数据
 	 * @since 3.2.0
@@ -97,8 +97,8 @@ public class OkHttpUtil {
 	 * 2. Rest模式，此时body需要传入一个JSON或者XML字符串，Hutool会自动绑定其对应的Content-Type
 	 * </pre>
 	 *
-	 * @param urlString  网址
-	 * @param body       post表单数据
+	 * @param urlString 网址
+	 * @param body      post表单数据
 	 * @param headerMap 消息头
 	 * @return 返回数据
 	 * @since 3.2.0
@@ -128,21 +128,27 @@ public class OkHttpUtil {
 				@Override
 				public void checkClientTrusted(X509Certificate[] x509Certificates, String s, Socket socket) {
 				}
+
 				@Override
 				public void checkServerTrusted(X509Certificate[] x509Certificates, String s, Socket socket) {
 				}
+
 				@Override
 				public void checkClientTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) {
 				}
+
 				@Override
 				public void checkServerTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) {
 				}
+
 				@Override
 				public void checkClientTrusted(X509Certificate[] arg0, String arg1) {
 				}
+
 				@Override
 				public void checkServerTrusted(X509Certificate[] arg0, String arg1) {
 				}
+
 				@Override
 				public X509Certificate[] getAcceptedIssuers() {
 					return new X509Certificate[0];
