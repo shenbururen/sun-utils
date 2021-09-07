@@ -15,6 +15,6 @@ public class ManyThreadTestTest {
 			//需要测试的代码
 			ThreadUtil.sleep(100);
 		});
-		//total time:1106hs
+		//total time:1106ms
 	}
 }
