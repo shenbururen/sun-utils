@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * 速度控制类
+ * 线程安全的速度控制类
  */
 public class IntervalSecondSpeeder {
 	//间隔时间最大发送速度,比如：间隔时间=100MS，那么该变量=每100MS最大可以发多少条。
