@@ -44,7 +44,7 @@ public class ManyThreadTest {
 			log.error(e);
 		}
 		long hs = System.currentTimeMillis() - start;
-		log.info("total time:{}hs", hs);
+		log.info("total time:{}ms", hs);
 		return hs;
 	}
 }
