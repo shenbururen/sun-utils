@@ -8,10 +8,10 @@ import org.junit.Test;
  * @author sun
  * @date 2021-09-07
  **/
-public class ManyThreadTestTest {
+public class ManyThreadRunTest {
 	@Test
 	public void manyThreadTestTest(){
-		long totalTime = ManyThreadTest.test(5, 10, () -> {
+		long totalTime = ManyThreadRun.run(5, 10, () -> {
 			//需要测试的代码
 			ThreadUtil.sleep(100);
 		});

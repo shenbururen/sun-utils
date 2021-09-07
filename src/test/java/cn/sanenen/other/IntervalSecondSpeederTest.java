@@ -1,6 +1,6 @@
 package cn.sanenen.other;
 
-import cn.sanenen.thread.ManyThreadTest;
+import cn.sanenen.thread.ManyThreadRun;
 import cn.sanenen.utils.other.IntervalSecondSpeeder;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ public class IntervalSecondSpeederTest {
 		//限制每秒可通过10个
 		IntervalSecondSpeeder speeder = new IntervalSecondSpeeder(10);
 		//十个线程，每个线程执行10次，共一百次，预计10s左右执行完成。
-		ManyThreadTest.test(10, 10, speeder::limitSpeed);
+		ManyThreadRun.run(10, 10, speeder::limitSpeed);
 		//total time:9854ms
 	}
 }

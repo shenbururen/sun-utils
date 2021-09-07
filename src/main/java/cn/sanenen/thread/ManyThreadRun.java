@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
  * @author sun
  * @date 2021-09-07
  **/
-public class ManyThreadTest {
+public class ManyThreadRun {
 	private static final Log log = Log.get();
 
 	/**
@@ -22,7 +22,7 @@ public class ManyThreadTest {
 	 * @param run       无参数，无返回的函数接口。非实际线程。
 	 * @return 执行总耗时   
 	 */
-	public static long test(int threadNum, int forNum, Runnable run) {
+	public static long run(int threadNum, int forNum, Runnable run) {
 		CountDownLatch latch = new CountDownLatch(threadNum);
 		long start = System.currentTimeMillis();
 		for (int i = 0; i < threadNum; i++) {
