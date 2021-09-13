@@ -15,6 +15,9 @@ import java.util.concurrent.Executors;
 
 /**
  * 根据https://github.com/tietang/fqueue项目改造而来。
+ * 相较于fqueue 读写使用同一把锁，改为 读写 使用各自的锁，切换数据文件时，使用同一把锁。
+ * 性能提升大概百分之20。
+ * 
  * 内嵌本地持久化的高性能队列,主要解决内存队列（ConcurrentLinkedQueue）不能持久化的问题。
  * 应用启动时调用setting方法设置持久化目录和单文件限制大小，默认"smq"目录
  *
