@@ -3,7 +3,7 @@ package cn.sanenen.thread;
 import cn.hutool.log.Log;
 
 /**
- * 标准线程类，继承该类，覆写handler方法。
+ * 无限循环执行标准线程类，继承该类，覆写handler方法。
  *
  * @author sun
  */
@@ -43,14 +43,26 @@ public abstract class StandardThread implements Runnable {
 	/**
 	 * 具体业务处理，子类自己处理异常和睡眠。
 	 */
-	public abstract void handler();
+	protected abstract void handler();
 
-	public void initBefore() {}
+	/**
+	 * 线程启动前执行
+	 */
+	protected void initBefore() {}
 
-	public void initAfter() {}
+	/**
+	 * 线程启动后执行
+	 */
+	protected void initAfter() {}
 
-	public void closeBefore() {}
+	/**
+	 * 线程关闭后执行
+	 */
+	protected void closeBefore() {}
 
-	public void closeAfter() {}
+	/**
+	 * 线程关闭后执行
+	 */
+	protected void closeAfter() {}
 
 }
