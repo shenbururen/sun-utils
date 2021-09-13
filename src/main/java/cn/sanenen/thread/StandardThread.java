@@ -23,8 +23,10 @@ public abstract class StandardThread implements Runnable {
 	 * 线程初始化
 	 */
 	public void init() {
+		initBefore();
 		Thread thread = new Thread(this);
 		thread.start();
+		initAfter();
 		log.info("{} init", this.getClass().getSimpleName());
 	}
 
@@ -32,7 +34,9 @@ public abstract class StandardThread implements Runnable {
 	 * 线程关闭调用
 	 */
 	public void close() {
+		closeBefore();
 		runFlag = false;
+		closeAfter();
 		log.info("{} close", this.getClass().getSimpleName());
 	}
 
@@ -40,4 +44,13 @@ public abstract class StandardThread implements Runnable {
 	 * 具体业务处理，子类自己处理异常和睡眠。
 	 */
 	public abstract void handler();
+
+	public void initBefore() {}
+
+	public void initAfter() {}
+
+	public void closeBefore() {}
+
+	public void closeAfter() {}
+
 }
