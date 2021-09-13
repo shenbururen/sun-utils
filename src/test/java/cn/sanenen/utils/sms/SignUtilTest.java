@@ -1,6 +1,5 @@
-package cn.sanenen.sms;
+package cn.sanenen.utils.sms;
 
-import cn.sanenen.utils.sms.SignUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
