@@ -1,7 +1,6 @@
-package cn.sanenen.other;
+package cn.sanenen.utils.other;
 
 import cn.sanenen.thread.ManyThreadRun;
-import cn.sanenen.utils.other.IntervalSecondSpeeder;
 import org.junit.Test;
 
 /**
