@@ -1,5 +1,6 @@
 package cn.sanenen;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.setting.Setting;
 
 /**
@@ -12,8 +13,11 @@ public class SunSetting {
 	private static final Setting setting;
 
 	static {
-		setting = new Setting("sun.setting");
-		//setting.autoLoad(true);
+		if (FileUtil.exist("sun.setting")){
+			setting = new Setting("sun.setting");
+		}else {
+			setting = new Setting();
+		}
 	}
 
 	public static long getConnectTimeout() {
