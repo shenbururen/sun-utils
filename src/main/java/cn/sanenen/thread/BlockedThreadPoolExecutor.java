@@ -1,5 +1,7 @@
 package cn.sanenen.thread;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -27,7 +29,7 @@ public class BlockedThreadPoolExecutor extends ThreadPoolExecutor {
 
 
 	@Override
-	public void execute(Runnable command) {
+	public void execute(@NotNull Runnable command) {
 		try {
 			semaphore.acquire();
 			super.execute(command);
