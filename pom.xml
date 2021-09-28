@@ -6,12 +6,7 @@
 
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>1.0.0</version>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-    </properties>
+    <version>2.0.0</version>
 
     <dependencies>
         <!-- excel工具 依赖 -->
@@ -97,6 +92,17 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <!-- 根据实际情况设置 JDK -->
+                    <source>1.8</source><!-- 源代码使用的开发版本 -->
+                    <target>1.8</target><!-- 需要生成的目标class文件的编译版本 -->
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>3.2.1</version>
                 <configuration>
@@ -113,6 +119,7 @@
             </plugin>
         </plugins>
     </build>
+
 
     <distributionManagement>
         <repository>
