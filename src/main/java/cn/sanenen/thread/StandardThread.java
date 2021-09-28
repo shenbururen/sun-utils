@@ -8,7 +8,7 @@ import cn.hutool.log.Log;
  * @author sun
  */
 public abstract class StandardThread implements Runnable {
-	protected static final Log log = Log.get();
+	protected final Log log = Log.get(this.getClass());
 
 	private boolean runFlag = true;
 
