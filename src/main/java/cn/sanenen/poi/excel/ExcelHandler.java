@@ -295,8 +295,6 @@ public class ExcelHandler<T> {
 		} catch (Exception e) {
 			log.error("导出Excel异常{}", e.getMessage());
 			throw new UtilException("导出Excel失败，请联系网站管理员！");
-		} finally {
-			IOUtils.closeQuietly(wb);
 		}
 	}
 

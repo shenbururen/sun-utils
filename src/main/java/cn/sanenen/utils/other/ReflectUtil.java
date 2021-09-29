@@ -4,7 +4,6 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.log.Log;
-import org.apache.poi.ss.usermodel.DateUtil;
 
 import java.lang.reflect.*;
 import java.util.Date;
@@ -110,9 +109,9 @@ public class ReflectUtil extends cn.hutool.core.util.ReflectUtil {
 						args[i] = Convert.toFloat(args[i]);
 					} else if (cs[i] == Date.class) {
 						if (args[i] instanceof String) {
-							args[i] = cn.hutool.core.date.DateUtil.parseDate((String) args[i]);
+							args[i] = cn.hutool.core.date.DateUtil.parseDateTime((String) args[i]);
 						} else {
-							args[i] = DateUtil.getJavaDate((Double) args[i]);
+							args[i] = args[i];
 						}
 					} else if (cs[i] == boolean.class || cs[i] == Boolean.class) {
 						args[i] = Convert.toBool(args[i]);
