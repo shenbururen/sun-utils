@@ -1,6 +1,9 @@
 package cn.sanenen.utils.sms;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Console;
+import cn.sanenen.utils.sms.template.TemplateUtil;
+import cn.sanenen.utils.sms.template.entity.TemplateInfo;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -41,12 +44,19 @@ public class TemplateUtilTest {
 		Assert.assertTrue(TemplateUtil.matchIn(list, "您的验证码是8578").contains("您的验证码是{{}}"));
 		Assert.assertTrue(TemplateUtil.matchIn(list, "您好，您的余额是857亿元").contains("您好，您的余额是{{}}"));
 	}
+
 	@Test
 	public void test4() {
 		List<String> list = CollUtil.newArrayList(
 				"您的验证码是()",
 				"您好，您的余额是()");
-		Assert.assertTrue(TemplateUtil.matchIn(list, "您的验证码是8578","()").contains("您的验证码是()"));
-		Assert.assertTrue(TemplateUtil.matchIn(list, "您好，您的余额是857亿元","()").contains("您好，您的余额是()"));
+		Assert.assertTrue(TemplateUtil.matchIn(list, "您的验证码是8578", "()").contains("您的验证码是()"));
+		Assert.assertTrue(TemplateUtil.matchIn(list, "您好，您的余额是857亿元", "()").contains("您好，您的余额是()"));
+	}
+
+	@Test
+	public void test5() {
+		TemplateInfo templateInfo = new TemplateInfo("{{a}}您的验证码是{{b}},{{c}}{{d}}");
+		Console.log(TemplateUtil.matchIn(templateInfo, "1的您的验证码是854587,34的,/。$").getParamMap());
 	}
 }

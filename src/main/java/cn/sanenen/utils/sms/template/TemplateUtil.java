@@ -1,8 +1,10 @@
-package cn.sanenen.utils.sms;
+package cn.sanenen.utils.sms.template;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.sanenen.utils.sms.template.entity.TemplateInfo;
+import cn.sanenen.utils.sms.template.entity.TemplateResult;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,6 +18,21 @@ import java.util.Set;
  **/
 public class TemplateUtil {
 
+	/**
+	 * 调用模版对象的匹配方法，并返回结果。
+	 * 主要为提取模版中变量对应的值。
+	 * 例：
+	 * 模版：您的欢乐豆还剩余{{count}}个。
+	 * 内容：您的欢乐豆还剩余9584个。
+	 * 结果：count:9584
+	 *
+	 * @param templateInfo 模版对象
+	 * @param content      待匹配内容
+	 * @return TemplateResult
+	 */
+	public static TemplateResult matchIn(TemplateInfo templateInfo, String content) {
+		return templateInfo.matchIn(content);
+	}
 
 	/**
 	 * 查找内容匹配的模版字符串,适合字符不怎么重复的场景。
