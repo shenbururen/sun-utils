@@ -106,7 +106,7 @@ public class SMQ {
 		log.info("close SQueue");
 	}
 
-	public static String get(String topic) {
+	public static String pop(String topic) {
 		isLock();
 		try {
 			byte[] data = getSQueue(topic).readNextAndRemove();
@@ -119,7 +119,7 @@ public class SMQ {
 		return null;
 	}
 
-	public static void put(String topic, String data) {
+	public static void push(String topic, String data) {
 		isLock();
 		try {
 			getSQueue(topic).add(data.getBytes());

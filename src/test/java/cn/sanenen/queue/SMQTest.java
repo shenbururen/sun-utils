@@ -24,17 +24,17 @@ public class SMQTest {
 		new Thread(() -> ManyThreadRun.run(20, 1000000, () -> {
 			String data = IdUtil.fastSimpleUUID();
 			cache.put(data, 1);
-			SMQ.put("topic1", data);
+			SMQ.push("topic1", data);
 			String data2 = IdUtil.fastSimpleUUID();
 			cache2.put(data2, 1);
-			SMQ.put("topic2", data2);
+			SMQ.push("topic2", data2);
 		})).start();
 		ThreadUtil.sleep(1000);
 		new Thread(() -> ManyThreadRun.run(3, 1, () -> {
 			String data;
 			int i = 0;
 			while (true) {
-				data = SMQ.get("topic1");
+				data = SMQ.pop("topic1");
 				if (data == null) {
 					i++;
 					if (i > 10) {
@@ -52,7 +52,7 @@ public class SMQTest {
 			String data;
 			int i = 0;
 			while (true) {
-				data = SMQ.get("topic2");
+				data = SMQ.pop("topic2");
 				if (data == null) {
 					i++;
 					if (i > 10) {
