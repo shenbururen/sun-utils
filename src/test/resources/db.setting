@@ -1,0 +1,16 @@
+## 可选配置
+# 是否在日志中显示执行的SQL
+showSql = false
+# 是否格式化显示的SQL
+formatSql = false
+# 是否显示SQL参数
+showParams = false
+# 打印SQL的日志等级，默认debug
+sqlLevel = debug
+
+[mysql]
+# JDBC URL，根据不同的数据库，使用相应的JDBC连接字符串
+url = jdbc:mysql://120.26.82.40:3306/callcenter?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+username = root
+password = yunman1201
+
