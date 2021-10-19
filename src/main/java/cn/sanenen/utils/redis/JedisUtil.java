@@ -1,35 +1,46 @@
 package cn.sanenen.utils.redis;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.db.nosql.redis.RedisDS;
+import cn.hutool.log.Log;
 import com.alibaba.fastjson.JSON;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.*;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 /**
  * redis工具类
  */
 public class JedisUtil {
+	protected final Log log = Log.get(this.getClass());
 
-	private final JedisPool jedisPool;
+	private JedisPool jedisPool;
+	private RedisDS redisDS;
 
 	public JedisUtil(JedisPool jedisPool) {
 		this.jedisPool = jedisPool;
 	}
 
+	public JedisUtil(RedisDS redisDS) {
+		this.redisDS = redisDS;
+	}
+
 	public void close() {
 		if (jedisPool != null) {
 			jedisPool.close();
+		} else {
+			redisDS.close();
 		}
 	}
 
 	public Jedis getJedis() {
-		return jedisPool.getResource();
+		if (jedisPool != null) {
+			return jedisPool.getResource();
+		} else {
+			return redisDS.getJedis();
+		}
 	}
 
 	/**
@@ -354,15 +365,37 @@ public class JedisUtil {
 	 * @param count 查询出条数
 	 * @param clazz 需要被转换的对象
 	 */
-	public <T> List<T> rpop(String key, int count, Class<T> clazz) {
+	public <T> List<T> rpop(String key, long count, Class<T> clazz) {
 		try (Jedis jedis = getJedis()) {
-			List<String> rpop = jedis.rpop(key, count);
-			if (CollUtil.isEmpty(rpop)) {
+			Long size = jedis.llen(key);
+			if (size == null || size <= 0) {
 				return null;
 			}
-			return rpop.stream()
-					.map(s -> JSON.parseObject(s, clazz))
-					.collect(Collectors.toList());
+			if (size < count) {
+				count = size;
+			}
+			List<Response<String>> responses = new ArrayList<>();
+			Pipeline p = jedis.pipelined();
+			for (int i = 0; i < count; i++) {
+				responses.add(p.rpop(key));
+			}
+			p.sync();
+			List<T> resultList = new ArrayList<>();
+			for (Response<String> response : responses) {
+				String v = response.get();
+				if (StrUtil.isNotBlank(v)) {
+					try {
+						T info = JSON.parseObject(v, clazz);
+						if (info != null) {
+							resultList.add(info);
+						}
+					} catch (Exception e) {
+						log.error(e, "json转换出错,已跳过该数据:{}", v);
+					}
+				}
+			}
+			p.close();
+			return resultList;
 		}
 	}
 
@@ -371,7 +404,7 @@ public class JedisUtil {
 	 *
 	 * @param key key
 	 */
-	public Long lpush(String key, List<Object> objects) {
+	public <T> Long lpush(String key, List<T> objects) {
 		if (CollUtil.isEmpty(objects)) {
 			return 0L;
 		}
