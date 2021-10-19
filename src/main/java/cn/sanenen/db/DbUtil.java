@@ -63,18 +63,17 @@ public class DbUtil {
 				if (value == null && ignoreNullValue) {
 					continue;
 				}
-				
 				if (useMybatisPlusAnnotation) {
 					TableField tableField = prop.getField().getAnnotation(TableField.class);
 					if (tableField != null) {
 						if (!tableField.exist()) {
 							continue;
 						}
-						key = tableField.value();
-					}else {
+						key = StrUtil.blankToDefault(tableField.value(), StrUtil.toUnderlineCase(prop.getFieldName()));
+					} else {
 						key = StrUtil.toUnderlineCase(prop.getFieldName());
 					}
-				}else {
+				} else {
 					key = StrUtil.toUnderlineCase(prop.getFieldName());
 				}
 				entity.set(key, value);
@@ -167,7 +166,7 @@ public class DbUtil {
 				}
 				TableId tableField = prop.getField().getAnnotation(TableId.class);
 				if (tableField != null) {
-					key = tableField.value();
+					key = StrUtil.blankToDefault(tableField.value(), StrUtil.toUnderlineCase(prop.getFieldName()));
 					Entity entity = Entity.create(tableName);
 					entity.set(key, value);
 					return entity;

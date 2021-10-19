@@ -1,5 +1,7 @@
 package cn.sanenen.db;
 
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.util.Date;
@@ -9,7 +11,9 @@ import java.util.Date;
  * @date 2021-10-18
  **/
 @Data
+@TableName("u_user")
 public class User {
+	@TableId
 	private Long id;
 	private String name;
 	private String pswd;

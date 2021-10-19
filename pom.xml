@@ -104,7 +104,7 @@
     </dependencies>
     <build>
         <plugins>
-            <!--测试 DbUtil在无依赖情况,执行情况-->
+            <!--测试 DbUtil在无依赖情况,执行情况
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -114,7 +114,7 @@
                         <classpathDependencyExclude>com.baomidou:mybatis-plus-annotation</classpathDependencyExclude>
                     </classpathDependencyExcludes>
                 </configuration>
-            </plugin>
+            </plugin>-->
             
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
