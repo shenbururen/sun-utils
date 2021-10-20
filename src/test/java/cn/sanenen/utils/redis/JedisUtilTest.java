@@ -35,4 +35,14 @@ public class JedisUtilTest {
 		List<JSONObject> test2 = test.rpop("test1", 50, JSONObject.class);
 		Console.log(test2);
 	}
+	@Test
+	public void test3() {
+		List<JSONObject> test3 = test.rpopByLua("test1", 9000, JSONObject.class);
+		Console.log(test3);
+	}
+	@Test
+	public void test4() {
+		JSONObject test4 = test.rpop("test1", JSONObject.class);
+		Console.log(test4);
+	}
 }

@@ -1,6 +1,7 @@
 package cn.sanenen.utils.redis;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.nosql.redis.RedisDS;
 import cn.hutool.log.Log;
@@ -359,7 +360,23 @@ public class JedisUtil {
 	}
 
 	/**
-	 * 从队列中取出数据
+	 * 从队列中取出数据。
+	 *
+	 * @param key   key
+	 * @param clazz 需要被转换的对象
+	 */
+	public <T> T rpop(String key, Class<T> clazz) {
+		try (Jedis jedis = getJedis()) {
+			String rpop = jedis.rpop(key);
+			if (StrUtil.isBlank(rpop)) {
+				return null;
+			}
+			return JSON.parseObject(rpop, clazz);
+		}
+	}
+
+	/**
+	 * 批量从队列中取出数据，使用管道方式。
 	 *
 	 * @param key   key
 	 * @param count 查询出条数
@@ -400,7 +417,32 @@ public class JedisUtil {
 	}
 
 	/**
-	 * 从队列中取出数据
+	 * 批量从队列中取出数据，使用lua脚本方式。
+	 * 注意：因为事务关系，单次数量不宜太多。
+	 *
+	 * @param key   key
+	 * @param count 查询出条数
+	 * @param clazz 需要被转换的对象
+	 */
+	public <T> List<T> rpopByLua(String key, long count, Class<T> clazz) {
+		try (Jedis jedis = getJedis()) {
+			Object result = jedis.evalsha(jedis.scriptLoad(LuaStr.RPOP_BATCH),
+					Collections.singletonList(key),
+					Collections.singletonList(String.valueOf(count)));
+			if (ObjectUtil.isEmpty(result)) {
+				return null;
+			}
+			List<T> results = new ArrayList<>(((List<?>) result).size());
+			for (Object obj : (List<?>) result) {
+				T t = JSON.parseObject(String.valueOf(obj), clazz);
+				results.add(t);
+			}
+			return results;
+		}
+	}
+
+	/**
+	 * 批量放入队列数据
 	 *
 	 * @param key key
 	 */
@@ -413,6 +455,20 @@ public class JedisUtil {
 					.map(JSON::toJSONString)
 					.toArray(String[]::new);
 			return jedis.lpush(key, strings);
+		}
+	}
+
+	/**
+	 * 放入队列数据
+	 *
+	 * @param key key
+	 */
+	public <T> Long lpush(String key, T t) {
+		if (t == null) {
+			return 0L;
+		}
+		try (Jedis jedis = getJedis()) {
+			return jedis.lpush(key, JSON.toJSONString(t));
 		}
 	}
 
