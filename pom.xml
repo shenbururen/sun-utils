@@ -7,7 +7,40 @@
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
     <version>2.0.0</version>
+    <packaging>jar</packaging>
 
+    <name>sun-utils</name>
+    <url>https://github.com/shenbururen/sun-utils</url>
+    <description>偏个性化的工具类，扩展了hutool。</description>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <tag>main</tag>
+        <url>git@github.com:shenbururen/sun-utils.git</url>
+        <connection>scm:git:git@github.com:shenbururen/sun-utils.git</connection>
+        <developerConnection>scm:git:git@github.com:shenbururen/sun-utils.git</developerConnection>
+    </scm>
+    <developers>
+        <developer>
+            <name>sun</name>
+            <email>sun@sanenen.cn</email>
+            <organization>sun</organization>
+        </developer>
+    </developers>
+    <properties>
+        <gpg.executable>C:\Program Files\Git\usr\bin\gpg.exe</gpg.executable>
+        <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
+        <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
+    </properties>
+    
     <dependencies>
         <dependency>
             <groupId>mysql</groupId>
@@ -127,30 +160,80 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            <!-- Javadoc -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
-                <configuration>
-                    <attach>true</attach>
-                </configuration>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.1.1</version>
                 <executions>
                     <execution>
-                        <phase>compile</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
+            <!-- Source -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>oss</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- gpg plugin，用于签名认证 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--staging puglin，用于自动执行发布阶段(免手动)-->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <!-- release plugin，用于发布到release仓库部署插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.4.2</version>
+            </plugin>
         </plugins>
     </build>
 
 
     <distributionManagement>
-        <repository>
+        <!--<repository>
             <id>rdc-releases</id>
             <url>https://packages.aliyun.com/maven/repository/2008289-release-0lrSuL/</url>
+        </repository>-->
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/releases/</url>
         </repository>
     </distributionManagement>
 
