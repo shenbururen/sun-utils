@@ -1,6 +1,6 @@
 # sun-utils
 一些工具类。具体可看源代码及测试用例，文档可能没那么及时。
-###使用
+### 使用
 ```xml
 <dependency>
     <groupId>cn.sanenen</groupId>
