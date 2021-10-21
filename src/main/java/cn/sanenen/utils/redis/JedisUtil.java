@@ -545,4 +545,57 @@ public class JedisUtil {
 		return set;
 	}
 
+	/**
+	 * 获取分布式锁
+	 *
+	 * @param lockKey 锁键
+	 * @param appId   应用标识
+	 * @return 是否获取锁 true 成功
+	 */
+	public boolean lock(String lockKey, String appId) {
+		return lock(lockKey, appId, 60);
+	}
+
+	/**
+	 * 获取分布式锁
+	 *
+	 * @param lockKey    锁键
+	 * @param appId      应用标识
+	 * @param expireTime 锁超时时间 单位 秒
+	 * @return 是否获取锁 true 成功
+	 */
+	public boolean lock(String lockKey, String appId, long expireTime) {
+		try (Jedis jedis = getJedis()) {
+			String v = jedis.get(lockKey);
+			if (!appId.equals(v)) {
+				if (v == null) {
+					if (jedis.setnx(lockKey, appId) == 1) {
+						jedis.expire(lockKey, expireTime);
+						return true;
+					}
+				}
+				return false;
+			} else {
+				//当前应用已获得锁，重新设置过期时间。
+				jedis.expire(lockKey, expireTime);
+				return true;
+			}
+		}
+	}
+
+	/**
+	 * 释放分布式锁
+	 *
+	 * @param lockKey 锁key
+	 * @param appId   应用id
+	 */
+	public void releaseLock(String lockKey, String appId) {
+		try (Jedis jedis = getJedis()) {
+			String v = jedis.get(lockKey);
+			if (appId.equals(v)) {
+				jedis.del(lockKey);
+			}
+		}
+	}
+
 }
