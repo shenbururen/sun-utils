@@ -10,6 +10,7 @@ import redis.clients.jedis.*;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * redis工具类
@@ -376,13 +377,31 @@ public class JedisUtil {
 	}
 
 	/**
+	 * 批量从队列中取出数据 6.0以上版本
+	 *
+	 * @param key   key
+	 * @param count 查询出条数
+	 * @param clazz 需要被转换的对象
+	 */
+	public <T> List<T> rpop(String key, int count, Class<T> clazz) {
+		try (Jedis jedis = getJedis()) {
+			List<String> rpop = jedis.rpop(key, count);
+			if (CollUtil.isEmpty(rpop)) {
+				return null;
+			}
+			return rpop.stream()
+					.map(s -> JSON.parseObject(s, clazz))
+					.collect(Collectors.toList());
+		}
+	}
+	/**
 	 * 批量从队列中取出数据，使用管道方式。
 	 *
 	 * @param key   key
 	 * @param count 查询出条数
 	 * @param clazz 需要被转换的对象
 	 */
-	public <T> List<T> rpop(String key, long count, Class<T> clazz) {
+	public <T> List<T> rpopByPip(String key, long count, Class<T> clazz) {
 		try (Jedis jedis = getJedis()) {
 			Long size = jedis.llen(key);
 			if (size == null || size <= 0) {
