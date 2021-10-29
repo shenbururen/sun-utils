@@ -10,6 +10,7 @@ import redis.clients.jedis.*;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * redis工具类
@@ -376,13 +377,31 @@ public class JedisUtil {
 	}
 
 	/**
+	 * 批量从队列中取出数据 6.0以上版本
+	 *
+	 * @param key   key
+	 * @param count 查询出条数
+	 * @param clazz 需要被转换的对象
+	 */
+	public <T> List<T> rpop(String key, int count, Class<T> clazz) {
+		try (Jedis jedis = getJedis()) {
+			List<String> rpop = jedis.rpop(key, count);
+			if (CollUtil.isEmpty(rpop)) {
+				return null;
+			}
+			return rpop.stream()
+					.map(s -> JSON.parseObject(s, clazz))
+					.collect(Collectors.toList());
+		}
+	}
+	/**
 	 * 批量从队列中取出数据，使用管道方式。
 	 *
 	 * @param key   key
 	 * @param count 查询出条数
 	 * @param clazz 需要被转换的对象
 	 */
-	public <T> List<T> rpop(String key, long count, Class<T> clazz) {
+	public <T> List<T> rpopByPip(String key, long count, Class<T> clazz) {
 		try (Jedis jedis = getJedis()) {
 			Long size = jedis.llen(key);
 			if (size == null || size <= 0) {
@@ -543,6 +562,59 @@ public class JedisUtil {
 			} while (!ScanParams.SCAN_POINTER_START.equals(cursor));
 		}
 		return set;
+	}
+
+	/**
+	 * 获取分布式锁
+	 *
+	 * @param lockKey 锁键
+	 * @param appId   应用标识
+	 * @return 是否获取锁 true 成功
+	 */
+	public boolean lock(String lockKey, String appId) {
+		return lock(lockKey, appId, 60);
+	}
+
+	/**
+	 * 获取分布式锁
+	 *
+	 * @param lockKey    锁键
+	 * @param appId      应用标识
+	 * @param expireTime 锁超时时间 单位 秒
+	 * @return 是否获取锁 true 成功
+	 */
+	public boolean lock(String lockKey, String appId, long expireTime) {
+		try (Jedis jedis = getJedis()) {
+			String v = jedis.get(lockKey);
+			if (!appId.equals(v)) {
+				if (v == null) {
+					if (jedis.setnx(lockKey, appId) == 1) {
+						jedis.expire(lockKey, expireTime);
+						return true;
+					}
+				}
+				return false;
+			} else {
+				//当前应用已获得锁，重新设置过期时间。
+				jedis.expire(lockKey, expireTime);
+				return true;
+			}
+		}
+	}
+
+	/**
+	 * 释放分布式锁
+	 *
+	 * @param lockKey 锁key
+	 * @param appId   应用id
+	 */
+	public void releaseLock(String lockKey, String appId) {
+		try (Jedis jedis = getJedis()) {
+			String v = jedis.get(lockKey);
+			if (appId.equals(v)) {
+				jedis.del(lockKey);
+			}
+		}
 	}
 
 }
