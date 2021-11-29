@@ -63,6 +63,51 @@ public class ByteUtil extends cn.hutool.core.util.ByteUtil {
 			System.arraycopy(src, 0, tmp, len - src.length, src.length);
 			return tmp;
 		}
+	}
 
+	/**
+	 * 移除给定字节数组 右侧空字节
+	 * @param src 待移除的字节数组
+	 * @return 结果
+	 */
+	public static byte[] rtrimBytes(byte[] src) {
+		int i = src.length - 1;
+		for (; i >= 0; i--) {
+			if (src[i] != 0) {
+				break;
+			}
+		}
+		if (i == src.length - 1) {
+			return src;
+		}
+		if (i == -1) {
+			return new byte[0];
+		}
+		byte[] tmp = new byte[i + 1];
+		System.arraycopy(src, 0, tmp, 0, i + 1);
+		return tmp;
+	}
+	
+	/**
+	 * 移除给定字节数组 左侧空字节
+	 * @param src 待移除的字节数组
+	 * @return 结果
+	 */
+	public static byte[] ltrimBytes(byte[] src) {
+		int i = 0;
+		for (; i < src.length; i++) {
+			if (src[i] != 0) {
+				break;
+			}
+		}
+		if (i == src.length) {
+			return new byte[0];
+		}
+		if (i == 0) {
+			return src;
+		}
+		byte[] tmp = new byte[src.length - i];
+		System.arraycopy(src, i, tmp, 0, src.length - i);
+		return tmp;
 	}
 }
