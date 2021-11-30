@@ -42,3 +42,8 @@
                       
 
 ```
+# 感谢 JetBrains 免费的开源授权
+
+<a href="https://www.jetbrains.com/?from=sun-utils" target="_blank">
+<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg" alt="JetBrains Logo (Main) logo.">
+</a>
