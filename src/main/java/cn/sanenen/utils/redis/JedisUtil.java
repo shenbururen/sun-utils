@@ -37,7 +37,7 @@ public class JedisUtil {
 		}
 	}
 
-	public Jedis getJedis() {
+	protected Jedis getJedis() {
 		if (jedisPool != null) {
 			return jedisPool.getResource();
 		} else {
