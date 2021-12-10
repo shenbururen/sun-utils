@@ -617,4 +617,36 @@ public class JedisUtil {
 		}
 	}
 
+
+	/**
+	 * 将 hashKey 所储存的值减去减量 decrement 。
+	 *
+	 * @param key       key
+	 * @param hKey      hashKey（小key）
+	 * @param decrement 减量
+	 * @return 减去 decrement 之后， key 的值。
+	 */
+	public Long hdecrBy(String key, String hKey, long decrement) {
+		try (Jedis jedis = getJedis()) {
+			return jedis.hincrBy(key, hKey, -decrement);
+		}
+	}
+
+	/**
+	 * 获取hash结构所有值，并转换为对象集合
+	 *
+	 * @param key   key
+	 * @param clazz 对象class
+	 * @return 结果集
+	 */
+	public <T> List<T> hvals(String key, Class<T> clazz) {
+		try (Jedis jedis = getJedis()) {
+			List<String> hvals = jedis.hvals(key);
+			if (CollUtil.isEmpty(hvals)) {
+				return null;
+			}
+			return hvals.stream().map(v -> JSON.parseObject(v, clazz)).collect(Collectors.toList());
+		}
+	}
+
 }
