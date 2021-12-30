@@ -65,6 +65,11 @@ public class HttpUtil {
 	}
 
 	public static Response uploadFile(String urlString, Map<String, Object> headerMap, Map<String, Object> paramMap, Charset charSet) throws IOException {
+		Request request = Request.post(urlString);
+		//添加消息头
+		if (CollUtil.isNotEmpty(headerMap)) {
+			headerMap.forEach((k, v) -> request.addHeader(k, String.valueOf(v)));
+		}
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create().setCharset(charSet);
 		paramMap.forEach((k, v) -> {
 			//判断是文件还是文本
@@ -77,12 +82,7 @@ public class HttpUtil {
 				builder.addTextBody(k, String.valueOf(v), ContentType.TEXT_PLAIN.withCharset(charSet));
 			}
 		});
-		Request request = Request.post(urlString)
-				.body(builder.build());
-		//添加消息头
-		if (CollUtil.isNotEmpty(headerMap)) {
-			headerMap.forEach((k, v) -> request.addHeader(k, String.valueOf(v)));
-		}
+		request.body(builder.build());
 		return call(request);
 	}
 
@@ -101,16 +101,16 @@ public class HttpUtil {
 	}
 
 	public static Response post(String urlString, Map<String, Object> headerMap, Map<String, Object> paramMap, Charset charSet) throws IOException {
-		Form form = Form.form();
-		if (CollUtil.isNotEmpty(paramMap)) {
-			paramMap.forEach((k, v) -> form.add(k, String.valueOf(v)));
-		}
-		Request request = Request.post(urlString)
-				.bodyForm(form.build(), charSet);
+		Request request = Request.post(urlString);
 		//添加消息头
 		if (CollUtil.isNotEmpty(headerMap)) {
 			headerMap.forEach((k, v) -> request.addHeader(k, String.valueOf(v)));
 		}
+		Form form = Form.form();
+		if (CollUtil.isNotEmpty(paramMap)) {
+			paramMap.forEach((k, v) -> form.add(k, String.valueOf(v)));
+		}
+		request.bodyForm(form.build(), charSet);
 		return call(request);
 	}
 
@@ -129,13 +129,13 @@ public class HttpUtil {
 	}
 
 	public static Response post(String urlString, Map<String, Object> headerMap, String body, Charset charSet) throws IOException {
-		HttpEntity httpEntity = HttpEntities.create(body, getContentType(body, charSet));
-		Request request = Request.post(urlString)
-				.body(httpEntity);
+		Request request = Request.post(urlString);
 		//添加消息头
 		if (CollUtil.isNotEmpty(headerMap)) {
 			headerMap.forEach((k, v) -> request.addHeader(k, String.valueOf(v)));
 		}
+		HttpEntity httpEntity = HttpEntities.create(body, getContentType(body, charSet));
+		request.body(httpEntity);
 		return call(request);
 	}
 

@@ -53,18 +53,18 @@ public class OkHttpUtil {
 	 * @since 3.2.0
 	 */
 	public static Response post(String urlString, Map<String, Object> paramMap, Map<String, Object> headerMap) throws IOException {
+		Request.Builder post = new Request.Builder()
+				.url(urlString);
+		//添加消息头
+		if (MapUtil.isNotEmpty(headerMap)) {
+			headerMap.forEach((k, v) -> post.addHeader(k, String.valueOf(v)));
+		}
 		FormBody.Builder builder = new FormBody.Builder();
 		if (MapUtil.isNotEmpty(paramMap)) {
 			//这里可以使用addEncoded ,如果值已经编码，这里就不再编码
 			paramMap.forEach((k, v) -> builder.add(k, String.valueOf(v)));
 		}
-		Request.Builder post = new Request.Builder()
-				.url(urlString)
-				.post(builder.build());
-		//添加消息头
-		if (MapUtil.isNotEmpty(headerMap)) {
-			headerMap.forEach((k, v) -> post.addHeader(k, String.valueOf(v)));
-		}
+		post.post(builder.build());
 		return call(post.build());
 
 	}
@@ -104,14 +104,14 @@ public class OkHttpUtil {
 	 * @since 3.2.0
 	 */
 	public static Response post(String urlString, String body, Map<String, Object> headerMap) throws IOException {
-		RequestBody requestBody = RequestBody.create(body.getBytes(CharsetUtil.CHARSET_UTF_8));
 		Request.Builder post = new Request.Builder()
-				.url(urlString)
-				.post(requestBody);
+				.url(urlString);
 		//添加消息头
 		if (MapUtil.isNotEmpty(headerMap)) {
 			headerMap.forEach((k, v) -> post.addHeader(k, String.valueOf(v)));
 		}
+		RequestBody requestBody = RequestBody.create(body.getBytes(CharsetUtil.CHARSET_UTF_8));
+		post.post(requestBody);
 		return call(post.build());
 	}
 
