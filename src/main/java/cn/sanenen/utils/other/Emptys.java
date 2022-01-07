@@ -11,4 +11,5 @@ public interface Emptys {
 	String STR = StrUtil.EMPTY;
 	byte[] BYTES = new byte[0];
 	String[] STR_ARRAY = new String[0];
+	int[] INT_ARRAY = new int[0];
 }
