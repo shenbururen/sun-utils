@@ -6,7 +6,12 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.nosql.redis.RedisDS;
 import cn.hutool.log.Log;
 import com.alibaba.fastjson.JSON;
-import redis.clients.jedis.*;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -37,7 +42,7 @@ public class JedisUtil {
 		}
 	}
 
-	public Jedis getJedis() {
+	protected Jedis getJedis() {
 		if (jedisPool != null) {
 			return jedisPool.getResource();
 		} else {
@@ -614,6 +619,38 @@ public class JedisUtil {
 			if (appId.equals(v)) {
 				jedis.del(lockKey);
 			}
+		}
+	}
+
+
+	/**
+	 * 将 hashKey 所储存的值减去减量 decrement 。
+	 *
+	 * @param key       key
+	 * @param hKey      hashKey（小key）
+	 * @param decrement 减量
+	 * @return 减去 decrement 之后， key 的值。
+	 */
+	public Long hdecrBy(String key, String hKey, long decrement) {
+		try (Jedis jedis = getJedis()) {
+			return jedis.hincrBy(key, hKey, -decrement);
+		}
+	}
+
+	/**
+	 * 获取hash结构所有值，并转换为对象集合
+	 *
+	 * @param key   key
+	 * @param clazz 对象class
+	 * @return 结果集
+	 */
+	public <T> List<T> hvals(String key, Class<T> clazz) {
+		try (Jedis jedis = getJedis()) {
+			List<String> hvals = jedis.hvals(key);
+			if (CollUtil.isEmpty(hvals)) {
+				return null;
+			}
+			return hvals.stream().map(v -> JSON.parseObject(v, clazz)).collect(Collectors.toList());
 		}
 	}
 
