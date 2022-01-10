@@ -39,10 +39,11 @@ public class DataIndex {
 	private FileChannel fc;
 	private MappedByteBuffer mappedByteBuffer;
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
+	private boolean syncRunFlag = true;
 
 	private ByteBuffer readerBuffer;
 	private ByteBuffer writerBuffer;
-	
+
 	private int readerIndex = 1;
 	private int writerIndex = 1;
 	private AtomicLong size = new AtomicLong();
@@ -120,7 +121,7 @@ public class DataIndex {
 	private class Sync implements Runnable {
 		@Override
 		public void run() {
-			while (true) {
+			while (syncRunFlag) {
 				if (mappedByteBuffer != null) {
 					try {
 						mappedByteBuffer.position(20);
@@ -149,6 +150,7 @@ public class DataIndex {
 			fc = null;
 			mappedByteBuffer = null;
 			dbRandFile = null;
+			syncRunFlag = false;
 			executor.shutdown();
 		} catch (IOException e) {
 			log.error("close index file error:", e);

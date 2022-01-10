@@ -5,9 +5,14 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>2.1.2</version>
+    <version>2.1.3</version>
 </dependency>
 ```
+### 更新日志
+2.1.3:
+- 修正持久化队列，关闭应用时可能出现hs_err错误文件的问题。
+
+
 ```
 ├─src
 ├─main
