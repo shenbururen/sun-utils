@@ -143,6 +143,7 @@ public class DataIndex {
 	 */
 	public void close() {
 		try {
+			syncRunFlag = false;
 			mappedByteBuffer.force();
 			MappedByteBufferUtil.clean(mappedByteBuffer);
 			fc.close();
@@ -150,7 +151,6 @@ public class DataIndex {
 			fc = null;
 			mappedByteBuffer = null;
 			dbRandFile = null;
-			syncRunFlag = false;
 			executor.shutdown();
 		} catch (IOException e) {
 			log.error("close index file error:", e);
