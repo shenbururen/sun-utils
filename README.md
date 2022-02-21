@@ -5,10 +5,13 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>2.1.4</version>
+    <version>2.1.5</version>
 </dependency>
 ```
 ### 更新日志
+2.1.5:
+- 扩展hutool 日志工具类，增加 判断是否在拦截时段内的方法。
+- 升级mysql连接驱动至8.0.28。
 2.1.4:
 - 再次修正持久化队列，关闭应用时可能出现hs_err错误文件的问题。
 2.1.3:
