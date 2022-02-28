@@ -19,7 +19,7 @@ public class DateUtil extends cn.hutool.core.date.DateUtil {
 	 * @param end   格式HH:mm 或 HH:mm:ss
 	 * @return true 在拦截时段内
 	 */
-	public boolean isIntercept(String start, String end) {
+	public static boolean isIntercept(String start, String end) {
 		if (StrUtil.isAllNotBlank(start, end)) {
 			//全天24小时拦截
 			if (start.equals(end)) {
