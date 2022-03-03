@@ -3,6 +3,7 @@ package cn.sanenen.utils.sms;
 import cn.hutool.core.util.RandomUtil;
 
 import java.util.Calendar;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 短信cmpp协议msgid工具类
@@ -12,6 +13,16 @@ public class MsgIDUtil {
 
 	private static final long GwSeq = RandomUtil.randomLong(1, 32767L);
 
+	private final static AtomicInteger sequenceId = new AtomicInteger(RandomUtil.randomInt());
+
+	/**
+	 * 生成一个四字节 消息头id，循环使用。
+	 * @return 消息头id
+	 */
+	public static int getSequenceNo() {
+		return sequenceId.incrementAndGet();
+	}
+	
 	/**
 	 * 生成cmpp协议的msgId
 	 *
