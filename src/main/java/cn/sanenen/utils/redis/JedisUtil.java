@@ -476,7 +476,13 @@ public class JedisUtil {
 		}
 		try (Jedis jedis = getJedis()) {
 			String[] strings = objects.stream()
-					.map(JSON::toJSONString)
+					.map(v -> {
+						if (v instanceof String) {
+							return String.valueOf(v);
+						} else {
+							return JSON.toJSONString(v);
+						}
+					})
 					.toArray(String[]::new);
 			return jedis.lpush(key, strings);
 		}
@@ -492,7 +498,11 @@ public class JedisUtil {
 			return 0L;
 		}
 		try (Jedis jedis = getJedis()) {
-			return jedis.lpush(key, JSON.toJSONString(t));
+			if (t instanceof String) {
+				return jedis.lpush(key, String.valueOf(t));
+			} else {
+				return jedis.lpush(key, JSON.toJSONString(t));
+			}
 		}
 	}
 
