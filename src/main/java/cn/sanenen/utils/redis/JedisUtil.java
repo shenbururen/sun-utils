@@ -224,6 +224,24 @@ public class JedisUtil {
 	}
 
 	/**
+	 * 批量通道模式删除
+	 *
+	 * @param key key
+	 * @return 如果存在则删除该字段并返回1，否则返回0
+	 */
+	public Long hdel(String key, List<String> fields) {
+		try (Jedis jedis = getJedis()) {
+			Pipeline pipelined = jedis.pipelined();
+			for (String field : fields) {
+				pipelined.hdel(key, field);
+			}
+			pipelined.sync();
+			pipelined.close();
+		}
+		return 1L;
+	}
+
+	/**
 	 * 查看哈希表 key 中，给定域 field 是否存在。
 	 *
 	 * @param key   key
@@ -399,6 +417,7 @@ public class JedisUtil {
 					.collect(Collectors.toList());
 		}
 	}
+
 	/**
 	 * 批量从队列中取出数据，使用管道方式。
 	 *
