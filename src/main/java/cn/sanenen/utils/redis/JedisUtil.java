@@ -683,4 +683,35 @@ public class JedisUtil {
 		}
 	}
 
+	/**
+	 * 获取list结构所有值
+	 *
+	 * @param key key
+	 * @return 结果集
+	 */
+	public List<String> lrangeAll(String key) {
+		try (Jedis jedis = getJedis()) {
+			List<String> lvals = jedis.lrange(key, 0, -1);
+			if (CollUtil.isEmpty(lvals)) {
+				return null;
+			}
+			return lvals;
+		}
+	}
+
+	/**
+	 * 获取list结构所有值
+	 *
+	 * @param key   key
+	 * @param clazz 对象class
+	 * @return 结果集
+	 */
+	public <T> List<T> lrangeAll(String key, Class<T> clazz) {
+		List<String> lvals = lrangeAll(key);
+		if (CollUtil.isEmpty(lvals)) {
+			return null;
+		}
+		return lvals.stream().map(v -> JSON.parseObject(v, clazz)).collect(Collectors.toList());
+	}
+
 }
