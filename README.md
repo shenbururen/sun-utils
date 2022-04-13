@@ -5,10 +5,16 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>2.1.5</version>
+    <version>2.1.6</version>
 </dependency>
 ```
 ### 更新日志
+2.1.6:
+- MsgIDUtil 增加生成四字节消息头id（循环使用）。
+- redisUtil lpush 判断如果是字符串类型，则不再进行json转换。
+- redisUtil 添加通道模式批量删除hash 小key方法。
+- redisUtil 添加获取list结构所有值。
+
 2.1.5:
 - 扩展hutool 日志工具类，增加 判断是否在拦截时段内的方法。
 - 升级mysql连接驱动至8.0.28。
