@@ -1,6 +1,7 @@
 package cn.sanenen.utils.redis;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.db.nosql.redis.RedisDS;
@@ -412,9 +413,7 @@ public class JedisUtil {
 			if (CollUtil.isEmpty(rpop)) {
 				return null;
 			}
-			return rpop.stream()
-					.map(s -> JSON.parseObject(s, clazz))
-					.collect(Collectors.toList());
+			return rpop.stream().map(s -> JSON.parseObject(s, clazz)).collect(Collectors.toList());
 		}
 	}
 
@@ -459,6 +458,8 @@ public class JedisUtil {
 		}
 	}
 
+	private static String rpopBatchScriptSha = null;
+
 	/**
 	 * 批量从队列中取出数据，使用lua脚本方式。
 	 * 注意：因为事务关系，单次数量不宜太多。
@@ -469,9 +470,11 @@ public class JedisUtil {
 	 */
 	public <T> List<T> rpopByLua(String key, long count, Class<T> clazz) {
 		try (Jedis jedis = getJedis()) {
-			Object result = jedis.evalsha(jedis.scriptLoad(LuaStr.RPOP_BATCH),
-					Collections.singletonList(key),
-					Collections.singletonList(String.valueOf(count)));
+			if (rpopBatchScriptSha == null) {
+				//这里不用考虑并发，执行多次也没关系。
+				rpopBatchScriptSha = jedis.scriptLoad(LuaStr.RPOP_BATCH);
+			}
+			Object result = jedis.evalsha(rpopBatchScriptSha, Collections.singletonList(key), Collections.singletonList(String.valueOf(count)));
 			if (ObjectUtil.isEmpty(result)) {
 				return null;
 			}
@@ -481,6 +484,9 @@ public class JedisUtil {
 				results.add(t);
 			}
 			return results;
+		} catch (Exception e) {
+			rpopBatchScriptSha = null;
+			throw e;
 		}
 	}
 
@@ -494,15 +500,13 @@ public class JedisUtil {
 			return 0L;
 		}
 		try (Jedis jedis = getJedis()) {
-			String[] strings = objects.stream()
-					.map(v -> {
-						if (v instanceof String) {
-							return String.valueOf(v);
-						} else {
-							return JSON.toJSONString(v);
-						}
-					})
-					.toArray(String[]::new);
+			String[] strings = objects.stream().map(v -> {
+				if (v instanceof String) {
+					return String.valueOf(v);
+				} else {
+					return JSON.toJSONString(v);
+				}
+			}).toArray(String[]::new);
 			return jedis.lpush(key, strings);
 		}
 	}
@@ -599,60 +603,6 @@ public class JedisUtil {
 	}
 
 	/**
-	 * 获取分布式锁
-	 *
-	 * @param lockKey 锁键
-	 * @param appId   应用标识
-	 * @return 是否获取锁 true 成功
-	 */
-	public boolean lock(String lockKey, String appId) {
-		return lock(lockKey, appId, 60);
-	}
-
-	/**
-	 * 获取分布式锁
-	 *
-	 * @param lockKey    锁键
-	 * @param appId      应用标识
-	 * @param expireTime 锁超时时间 单位 秒
-	 * @return 是否获取锁 true 成功
-	 */
-	public boolean lock(String lockKey, String appId, long expireTime) {
-		try (Jedis jedis = getJedis()) {
-			String v = jedis.get(lockKey);
-			if (!appId.equals(v)) {
-				if (v == null) {
-					if (jedis.setnx(lockKey, appId) == 1) {
-						jedis.expire(lockKey, expireTime);
-						return true;
-					}
-				}
-				return false;
-			} else {
-				//当前应用已获得锁，重新设置过期时间。
-				jedis.expire(lockKey, expireTime);
-				return true;
-			}
-		}
-	}
-
-	/**
-	 * 释放分布式锁
-	 *
-	 * @param lockKey 锁key
-	 * @param appId   应用id
-	 */
-	public void releaseLock(String lockKey, String appId) {
-		try (Jedis jedis = getJedis()) {
-			String v = jedis.get(lockKey);
-			if (appId.equals(v)) {
-				jedis.del(lockKey);
-			}
-		}
-	}
-
-
-	/**
 	 * 将 hashKey 所储存的值减去减量 decrement 。
 	 *
 	 * @param key       key
@@ -712,6 +662,84 @@ public class JedisUtil {
 			return null;
 		}
 		return lvals.stream().map(v -> JSON.parseObject(v, clazz)).collect(Collectors.toList());
+	}
+
+	/**
+	 * 获取分布式锁
+	 *
+	 * @param lockKey 锁键
+	 * @param appId   应用标识
+	 * @return 是否获取锁 true 成功
+	 */
+	public boolean lock(String lockKey, String appId) {
+		return lock(lockKey, appId, 60);
+	}
+
+	/**
+	 * 获取分布式锁
+	 *
+	 * @param lockKey    锁键
+	 * @param appId      应用标识
+	 * @param expireTime 锁超时时间 单位 秒
+	 * @return 是否获取锁 true 成功
+	 */
+	public boolean lock(String lockKey, String appId, long expireTime) {
+		try (Jedis jedis = getJedis()) {
+			String v = jedis.get(lockKey);
+			if (!appId.equals(v)) {
+				if (v == null) {
+					if (jedis.setnx(lockKey, appId) == 1) {
+						jedis.expire(lockKey, expireTime);
+						return true;
+					}
+				}
+				return false;
+			} else {
+				//当前应用已获得锁，重新设置过期时间。
+				jedis.expire(lockKey, expireTime);
+				return true;
+			}
+		}
+	}
+
+	/**
+	 * 释放分布式锁
+	 *
+	 * @param lockKey 锁key
+	 * @param appId   应用id
+	 */
+	public void releaseLock(String lockKey, String appId) {
+		try (Jedis jedis = getJedis()) {
+			String v = jedis.get(lockKey);
+			if (appId.equals(v)) {
+				jedis.del(lockKey);
+			}
+		}
+	}
+
+
+	//缓存jedis.scriptLoad返回值
+	private static String limitScriptSha = null;
+
+	/**
+	 * hash结构控制并发或频次
+	 * @param key 大key
+	 * @param field 小key，一般为 用户名，手机号等。
+	 * @param limitCount 并发或频次总量
+	 * @return 1 并发或频次已超过。 -1 获取到一并发，或者增加一次。
+	 */
+	public long hLimit(String key, String field, long limitCount) {
+		try (Jedis jedis = getJedis()) {
+			//这里不用考虑并发，执行多次也没关系。
+			if (limitScriptSha == null) {
+				limitScriptSha = jedis.scriptLoad(LuaStr.HASH_LIMIT);
+			}
+			Object result = jedis.evalsha(limitScriptSha, Arrays.asList(key, field), Collections.singletonList(String.valueOf(limitCount)));
+			return NumberUtil.parseInt(String.valueOf(result));
+		} catch (Exception e) {
+			limitScriptSha = null;
+			throw e;
+		}
 	}
 
 }

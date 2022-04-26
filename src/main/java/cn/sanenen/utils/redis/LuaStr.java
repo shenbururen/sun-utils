@@ -28,4 +28,19 @@ public interface LuaStr {
 			"    end\n" +
 			"end\n" +
 			"return result";
+	/**
+	 * hash结构并发控制脚本
+	 */
+	String HASH_LIMIT =
+			"local key = KEYS[1]\n" +
+					"local field = KEYS[2]\n" +
+					"local limit = ARGV[1]\n" +
+					"local cur = redis.call('hget', key, field)\n" +
+					"if cur then\n" +
+					"    if tonumber(limit) <= tonumber(cur) then\n" +
+					"        return 1\n" +
+					"    end\n" +
+					"end\n" +
+					"redis.call('hincrBy', key, field, 1)\n" +
+					"return -1\n";
 }
