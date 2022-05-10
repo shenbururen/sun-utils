@@ -1,15 +1,13 @@
-host = localhost
-port = 6379
 maxTotal = 100
 maxIdle = 10
 minIdle = 3
-maxWaitMillis = 2000
-timeout = 2000
-connectionTimeout = 2000
-soTimeout = 2000
-password = 
-database = 0
-clientName = Hutool
+maxWaitMillis = 3000
+
 
 [test]
 host = localhost
+port = 6379
+password = 
+timeout = 3000
+database = 0
+clientName = sun
