@@ -12,6 +12,8 @@
 2.1.8:
 - 升级hutool-5.8.0 版本至5.8.4。
 - 升级lombok-1.18.20 版本至1.18.24。
+- ExcelHandler添加servlet支持。
+- ExcelHandler添加Workbook转InputStream的方法。
 
 2.1.7:
 - 升级hutool 版本至5.8.0 修复redis无法设置maxWaitMillis的问题。

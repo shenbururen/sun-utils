@@ -4,8 +4,11 @@ import cn.hutool.core.codec.Base64;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.exceptions.UtilException;
+import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.URLUtil;
 import cn.hutool.log.Log;
 import cn.hutool.poi.excel.ExcelPicUtil;
 import cn.hutool.poi.excel.ExcelReader;
@@ -23,8 +26,9 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.*;
 import org.openxmlformats.schemas.drawingml.x2006.spreadsheetDrawing.CTMarker;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -255,6 +259,27 @@ public class ExcelHandler<T> {
 		return exportExcel();
 	}
 
+	public void exportExcel(HttpServletResponse response) {
+		ServletOutputStream out = null;
+		try {
+			writeSheet();
+			wb.write(response.getOutputStream());
+		} catch (Exception e) {
+			log.error("导出Excel异常{}", e.getMessage());
+		} finally {
+			IoUtil.close(wb);
+		}
+	}
+
+	public void exportExcel(HttpServletResponse response, List<T> list, String sheetName) {
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setCharacterEncoding("utf-8");
+		response.setHeader("Content-Disposition", StrUtil.format("attachment;filename={}",
+				URLUtil.encode(sheetName + ".xlsx", CharsetUtil.CHARSET_UTF_8)));
+		this.init(list, sheetName, Type.EXPORT);
+		exportExcel(response);
+	}
+
 	/**
 	 * 对list数据源将其里面的数据导入到excel表单
 	 *
@@ -264,6 +289,30 @@ public class ExcelHandler<T> {
 	public Workbook importTemplateExcel(String sheetName) {
 		this.init(null, sheetName, Type.IMPORT);
 		return exportExcel();
+	}
+
+	/**
+	 * 对list数据源将其里面的数据导入到excel表单
+	 *
+	 * @param sheetName 工作表的名称
+	 * @return 结果
+	 */
+	public void importTemplateExcel(HttpServletResponse response, String sheetName) {
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setCharacterEncoding("utf-8");
+		response.setHeader("Content-Disposition", StrUtil.format("attachment;filename={}",
+				URLUtil.encode(sheetName + ".xlsx", CharsetUtil.CHARSET_UTF_8)));
+		this.init(null, sheetName, Type.IMPORT);
+		exportExcel(response);
+	}
+
+	public static InputStream workbookToStream(Workbook workbook) throws IOException {
+		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+			//创建临时文件
+			workbook.write(out);
+			byte[] bookByteAry = out.toByteArray();
+			return new ByteArrayInputStream(bookByteAry);
+		}
 	}
 
 	/**
@@ -279,7 +328,6 @@ public class ExcelHandler<T> {
 			log.error("导出Excel异常{}", e.getMessage());
 		} finally {
 			IOUtils.closeQuietly(wb);
-			IOUtils.closeQuietly(out);
 		}
 	}
 
@@ -331,7 +379,7 @@ public class ExcelHandler<T> {
 	 */
 	public void fillExcelData(int index, Row row) {
 		int startNo = index * (int) sheetSize;
-		int endNo = Math.min(startNo + (int)sheetSize, list.size());
+		int endNo = Math.min(startNo + (int) sheetSize, list.size());
 		for (int i = startNo; i < endNo; i++) {
 			row = sheet.createRow(i + 1 - startNo);
 			// 得到导出对象.
@@ -540,7 +588,7 @@ public class ExcelHandler<T> {
 				String separator = attr.separator();
 				if (StrUtil.isNotEmpty(dateFormat) && Objects.nonNull(value)) {
 					cell.setCellValue(DateUtil.format((Date) value, dateFormat));
-				} else if (StrUtil.isNotEmpty(readConverterExp) &&  Objects.nonNull(value)) {
+				} else if (StrUtil.isNotEmpty(readConverterExp) && Objects.nonNull(value)) {
 					cell.setCellValue(convertByExp(Convert.toStr(value), readConverterExp, separator));
 				} else if (value instanceof BigDecimal && -1 != attr.scale()) {
 					cell.setCellValue((((BigDecimal) value).setScale(attr.scale(), attr.roundingMode())).toString());
