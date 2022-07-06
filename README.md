@@ -5,10 +5,14 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>2.1.6</version>
+    <version>2.1.8</version>
 </dependency>
 ```
 ### 更新日志
+2.1.8:
+- 升级hutool-5.8.0 版本至5.8.4。
+- 升级lombok-1.18.20 版本至1.18.24。
+
 2.1.7:
 - 升级hutool 版本至5.8.0 修复redis无法设置maxWaitMillis的问题。
 - redisUtil增加hash结构并发或频次限制业务操作方法。
