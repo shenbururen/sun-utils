@@ -1,6 +1,6 @@
 package cn.sanenen.utils.sms.phonegeo;
 
-import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.log.Log;
 
@@ -29,7 +29,7 @@ public class PhoneNumberGeo {
 
 	private static synchronized void initData() {
 		if (dataByteArray == null) {
-			dataByteArray = FileUtil.readBytes(PHONE_DAT_FILE_PATH);
+			dataByteArray = ResourceUtil.readBytes(PHONE_DAT_FILE_PATH);
 			BYTE_BUFFER = ByteBuffer.wrap(dataByteArray).asReadOnlyBuffer().order(ByteOrder.BIG_ENDIAN);
 			
 			byte[] version = new byte[4];
