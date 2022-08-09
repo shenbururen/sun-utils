@@ -374,6 +374,17 @@ public class JedisUtil {
 	}
 
 	/**
+	 * 返回set集合 key 中的所有成员。
+	 *
+	 * @param key key
+	 */
+	public Set<String> smembers(String key) {
+		try (Jedis jedis = getJedis()) {
+			return jedis.smembers(key);
+		}
+	}
+
+	/**
 	 * 移除集合 key 中的一个或多个 member 元素，不存在的 member 元素会被忽略。
 	 *
 	 * @param key key
@@ -723,8 +734,9 @@ public class JedisUtil {
 
 	/**
 	 * hash结构控制并发或频次
-	 * @param key 大key
-	 * @param field 小key，一般为 用户名，手机号等。
+	 *
+	 * @param key        大key
+	 * @param field      小key，一般为 用户名，手机号等。
 	 * @param limitCount 并发或频次总量
 	 * @return 1 并发或频次已超过。 -1 获取到一并发，或者增加一次。
 	 */
