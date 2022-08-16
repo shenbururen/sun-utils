@@ -5,10 +5,17 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>2.1.8</version>
+    <version>2.2.0</version>
 </dependency>
 ```
 ### 更新日志
+2.2.0:
+- redisUtil添加set集合获取所有。
+- redisUtil添加批量添加hash类型值。
+- redisUtil添加zset相关的一些基础操作(增、删、查)。使用zset结构可以实现hash结构小key过期时间功能。
+- PhoneNumberGeo号码地区查找，文件读取方式修正，防止将资源文件打包到jar内时读取失败。
+- 
+
 2.1.8:
 - 升级hutool-5.8.0 版本至5.8.4。
 - 升级lombok-1.18.20 版本至1.18.24。
