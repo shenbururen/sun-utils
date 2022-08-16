@@ -319,6 +319,16 @@ public class JedisUtil {
 	}
 
 	/**
+	 * 批量将map中的值设置入哈希表 key 中。
+	 * @param key key
+	 */
+	public long hset(String key, Map<String, String> hash) {
+		try (Jedis jedis = getJedis()) {
+			return jedis.hset(key, hash);
+		}
+	}
+
+	/**
 	 * 将哈希表 key 中的域 field 的值设置为 value ，当且仅当域 field 不存在。
 	 *
 	 * @param key key
@@ -753,5 +763,48 @@ public class JedisUtil {
 			throw e;
 		}
 	}
+
+	/**
+	 * 将具有指定分数的指定成员添加到存储在 key 的排序集中。如果 member 已经是排序集的成员，则更新分数，并将元素重新插入正确的位置以确保排序。如果 key 不存在，则创建一个以指定成员为唯一成员的新排序集。如果键存在但不包含已排序的设置值，则返回错误。
+	 * 分数值可以是双精度浮点数的字符串表示。
+	 * 时间复杂度 O(log(N))，其中 N 是排序集中的元素数
+	 * @param key key
+	 * @param score 分数
+	 * @param member 可以当成 小key
+	 * @return 整数回复，具体来说： 1 如果添加了新元素 0 如果该元素已经是排序集的成员并且分数已更新
+	 */
+	public long zadd(String key, double score, String member) {
+		try (Jedis jedis = getJedis()) {
+			return jedis.zadd(key, score, member);
+		}
+	}
+
+	/**
+	 * 返回排序集中在 key 处的所有元素，其分数在 min 和 max 之间（包括分数等于 min 或 max 的元素）。
+	 * 具有相同分数的元素按字典顺序返回为 ASCII 字符串（这来自 Redis 排序集的属性，不涉及进一步的计算）。
+	 * 使用可选的LIMIT可以以类似 SQL 的方式仅获取匹配元素的范围。请注意，如果偏移量很大，则命令需要遍历列表中的偏移量元素，这加起来就是 O(M) 图。
+	 * @param key key
+	 * @param min 大于等于min
+	 * @param max 小于等于max
+	 * @param offset 偏移
+	 * @param count 数量
+	 */
+	public List<String> zrangeByScore(String key, double min, double max,
+	                                  int offset, int count) {
+		try (Jedis jedis = getJedis()) {
+			return jedis.zrangeByScore(key, min, max, offset, count);
+		}
+	}
+
+	/**
+	 * 从存储在 key 的排序集合值中删除指定的成员。如果成员不是集合的成员，则不执行任何操作。如果 key 不保存设置值，则返回错误。
+	 * 时间复杂度 O(log(N))，其中 N 是排序集中的元素数
+	 */
+	public long zrem(String expireKey, String... members) {
+		try (Jedis jedis = getJedis()) {
+			return jedis.zrem(expireKey, members);
+		}
+	}
+	
 
 }
