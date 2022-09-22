@@ -21,6 +21,11 @@ public class PhoneGeoTest {
 		assert lookup != null;
 		Assert.assertEquals(lookup.getCityCode(), "411000");
 	}
+	@Test
+	public void test2() {
+		PhoneNumberInfo lookup = PhoneNumberGeo.lookup("1599406");
+		Console.log(lookup);
+	}
 
 	@Test
 	public void test1() {
