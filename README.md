@@ -9,12 +9,14 @@
 </dependency>
 ```
 ### 更新日志
+2.3.0:
+- 新增一个LogUtil。日志打印时，值长度处理的工具方法。
+
 2.2.0:
 - redisUtil添加set集合获取所有。
 - redisUtil添加批量添加hash类型值。
 - redisUtil添加zset相关的一些基础操作(增、删、查)。使用zset结构可以实现hash结构小key过期时间功能。
 - PhoneNumberGeo号码地区查找，文件读取方式修正，防止将资源文件打包到jar内时读取失败。
-- 
 
 2.1.8:
 - 升级hutool-5.8.0 版本至5.8.4。
