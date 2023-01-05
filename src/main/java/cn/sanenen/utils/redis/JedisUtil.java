@@ -522,7 +522,7 @@ public class JedisUtil {
 		}
 		try (Jedis jedis = getJedis()) {
 			String[] strings = objects.stream().map(v -> {
-				if (v instanceof String) {
+				if (v instanceof CharSequence) {
 					return String.valueOf(v);
 				} else {
 					return JSON.toJSONString(v);
@@ -542,7 +542,7 @@ public class JedisUtil {
 			return 0L;
 		}
 		try (Jedis jedis = getJedis()) {
-			if (t instanceof String) {
+			if (t instanceof CharSequence) {
 				return jedis.lpush(key, String.valueOf(t));
 			} else {
 				return jedis.lpush(key, JSON.toJSONString(t));
