@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class OkHttpUtil {
 	private static final Log log = Log.get();
 
+	private static final int maxConnTotal = SunSetting.getMaxConnTotal();
 	private static final long connectTimeout = SunSetting.getConnectTimeout();
 	private static final long requestTimeout = SunSetting.getRequestTimeout();
 
@@ -161,12 +162,16 @@ public class OkHttpUtil {
 			} catch (NoSuchAlgorithmException | KeyManagementException e) {
 				log.error(e);
 			}
+			Dispatcher dispatcher = new Dispatcher();
+			dispatcher.setMaxRequests(maxConnTotal);
+			dispatcher.setMaxRequestsPerHost(maxConnTotal - 1);
 			assert sslContext != null;
 			return new OkHttpClient.Builder()
 					.connectTimeout(connectTimeout, TimeUnit.SECONDS)
 					.readTimeout(requestTimeout, TimeUnit.SECONDS)
 					.sslSocketFactory(sslContext.getSocketFactory(), trustManager)
 					.hostnameVerifier((hostname, session) -> true)
+					.dispatcher(dispatcher)
 					.build();
 		}
 	}
