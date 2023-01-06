@@ -11,7 +11,9 @@
 ### 更新日志
 2.3.1:
 - OkhttpUtil添加连接池配置。
-- RedisUtil String类型判断改为CharSequence
+- RedisUtil lpush String类型判断改为hutool的isSimpleValueType
+- 
+
 2.3.0:
 - 新增一个LogUtil。日志打印时，值长度处理的工具方法。
 

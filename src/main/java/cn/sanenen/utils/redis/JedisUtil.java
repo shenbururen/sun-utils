@@ -1,6 +1,7 @@
 package cn.sanenen.utils.redis;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ClassUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -522,7 +523,7 @@ public class JedisUtil {
 		}
 		try (Jedis jedis = getJedis()) {
 			String[] strings = objects.stream().map(v -> {
-				if (v instanceof CharSequence) {
+				if (ClassUtil.isSimpleValueType(v.getClass())) {
 					return String.valueOf(v);
 				} else {
 					return JSON.toJSONString(v);
@@ -542,7 +543,7 @@ public class JedisUtil {
 			return 0L;
 		}
 		try (Jedis jedis = getJedis()) {
-			if (t instanceof CharSequence) {
+			if (ClassUtil.isSimpleValueType(t.getClass())) {
 				return jedis.lpush(key, String.valueOf(t));
 			} else {
 				return jedis.lpush(key, JSON.toJSONString(t));
