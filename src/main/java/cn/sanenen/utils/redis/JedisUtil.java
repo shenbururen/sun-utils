@@ -266,6 +266,20 @@ public class JedisUtil {
 	}
 
 	/**
+	 * @param key   key
+	 * @param field 小key
+	 */
+	public <T> T hget(String key, String field, Class<T> clazz) {
+		try (Jedis jedis = getJedis()) {
+			String hget = jedis.hget(key, field);
+			if (StrUtil.isBlank(hget)) {
+				return null;
+			}
+			return JSON.parseObject(hget, clazz);
+		}
+	}
+
+	/**
 	 * @param key key
 	 */
 	public Map<String, String> hgetAll(String key) {
@@ -321,6 +335,7 @@ public class JedisUtil {
 
 	/**
 	 * 批量将map中的值设置入哈希表 key 中。
+	 *
 	 * @param key key
 	 */
 	public long hset(String key, Map<String, String> hash) {
@@ -448,8 +463,8 @@ public class JedisUtil {
 	 */
 	public <T> List<T> rpopByPip(String key, long count, Class<T> clazz) {
 		try (Jedis jedis = getJedis()) {
-			Long size = jedis.llen(key);
-			if (size == null || size <= 0) {
+			long size = jedis.llen(key);
+			if (size <= 0) {
 				return null;
 			}
 			if (size < count) {
@@ -769,8 +784,9 @@ public class JedisUtil {
 	 * 将具有指定分数的指定成员添加到存储在 key 的排序集中。如果 member 已经是排序集的成员，则更新分数，并将元素重新插入正确的位置以确保排序。如果 key 不存在，则创建一个以指定成员为唯一成员的新排序集。如果键存在但不包含已排序的设置值，则返回错误。
 	 * 分数值可以是双精度浮点数的字符串表示。
 	 * 时间复杂度 O(log(N))，其中 N 是排序集中的元素数
-	 * @param key key
-	 * @param score 分数
+	 *
+	 * @param key    key
+	 * @param score  分数
 	 * @param member 可以当成 小key
 	 * @return 整数回复，具体来说： 1 如果添加了新元素 0 如果该元素已经是排序集的成员并且分数已更新
 	 */
@@ -784,11 +800,12 @@ public class JedisUtil {
 	 * 返回排序集中在 key 处的所有元素，其分数在 min 和 max 之间（包括分数等于 min 或 max 的元素）。
 	 * 具有相同分数的元素按字典顺序返回为 ASCII 字符串（这来自 Redis 排序集的属性，不涉及进一步的计算）。
 	 * 使用可选的LIMIT可以以类似 SQL 的方式仅获取匹配元素的范围。请注意，如果偏移量很大，则命令需要遍历列表中的偏移量元素，这加起来就是 O(M) 图。
-	 * @param key key
-	 * @param min 大于等于min
-	 * @param max 小于等于max
+	 *
+	 * @param key    key
+	 * @param min    大于等于min
+	 * @param max    小于等于max
 	 * @param offset 偏移
-	 * @param count 数量
+	 * @param count  数量
 	 */
 	public List<String> zrangeByScore(String key, double min, double max,
 	                                  int offset, int count) {
@@ -806,6 +823,6 @@ public class JedisUtil {
 			return jedis.zrem(expireKey, members);
 		}
 	}
-	
+
 
 }
