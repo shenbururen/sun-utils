@@ -64,7 +64,7 @@ public class SMQ {
 	 * @param dbPath 持久化路径
 	 */
 	public static void setting(String dbPath) {
-		SMQ.setting(dbPath, dataSize, memoryQueueSize);
+		SMQ.setting(dbPath, 50, memoryQueueSize);
 	}
 
 	/**
