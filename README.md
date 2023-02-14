@@ -14,6 +14,7 @@
 - RedisUtil lpush String类型判断改为hutool的isSimpleValueType
 - RedisUtil hget添加转对象方法
 - SMQ修正设置文件大小的问题
+- SMQ memoryQueueSize 小于0时禁用内存队列
 
 2.3.0:
 - 新增一个LogUtil。日志打印时，值长度处理的工具方法。

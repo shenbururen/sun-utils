@@ -77,9 +77,7 @@ public class SMQ {
 		}
 		SMQ.dbPath = dbPath;
 		SMQ.dataSize = 1024 * 1024 * logSize;
-		if (memoryQueueSize > 0) {
-			SMQ.memoryQueueSize = memoryQueueSize;
-		}
+		SMQ.memoryQueueSize = memoryQueueSize;
 		isLock();
 	}
 
@@ -143,11 +141,13 @@ public class SMQ {
 	public static String pop(String topic) {
 		isLock();
 		try {
-			//先取内存队列
-			Queue<String> queue = getQueue(topic);
-			String poll = queue.poll();
-			if (poll != null) {
-				return poll;
+			if (memoryQueueSize > 0) {
+				//取内存队列
+				Queue<String> queue = getQueue(topic);
+				String poll = queue.poll();
+				if (poll != null) {
+					return poll;
+				}
 			}
 			byte[] data = getSQueue(topic).readNextAndRemove();
 			if (data != null) {
@@ -162,12 +162,14 @@ public class SMQ {
 	public static void push(String topic, String data) {
 		isLock();
 		try {
-			Queue<String> queue = getQueue(topic);
-			if (queue.size() > memoryQueueSize) {
-				getSQueue(topic).add(data.getBytes(StandardCharsets.UTF_8));
-			} else {
-				queue.offer(data);
+			if (memoryQueueSize > 0) {
+				Queue<String> queue = getQueue(topic);
+				if (queue.size() <= memoryQueueSize) {
+					queue.offer(data);
+					return;
+				}
 			}
+			getSQueue(topic).add(data.getBytes(StandardCharsets.UTF_8));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -175,7 +177,11 @@ public class SMQ {
 
 	public static long size(String topic) {
 		isLock();
-		return getQueue(topic).size() + getSQueue(topic).getQueueSize();
+		if (memoryQueueSize > 0) {
+			return getQueue(topic).size() + getSQueue(topic).getQueueSize();
+		} else {
+			return getSQueue(topic).getQueueSize();
+		}
 	}
 
 

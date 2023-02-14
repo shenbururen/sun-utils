@@ -2,6 +2,8 @@ package cn.sanenen.queue;
 
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.log.LogFactory;
+import cn.hutool.log.dialect.console.ConsoleLogFactory;
 import cn.sanenen.thread.ManyThreadRun;
 import org.junit.Test;
 
@@ -15,8 +17,25 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2021-09-10
  **/
 public class SMQTest {
+	static {
+		LogFactory.setCurrentLogFactory(new ConsoleLogFactory());
+	}
+
+	@Test
+	public void settingTest() {
+		SMQ.setting("/data/nnn");
+		SMQ.push("abc", "2");
+	}
+
+	@Test
+	public void settingTest2() {
+		SMQ.setting("/data/nnn", 100, 0);
+		SMQ.push("abc", "2");
+	}
+
 	@Test
 	public void putTest() {
+		SMQ.setting("/data/nnn", 100, 0);
 		//多线程写入的同时，多线程读取。
 		Map<String, Integer> cache = new ConcurrentHashMap<>();
 		Map<String, Integer> cache2 = new ConcurrentHashMap<>();
