@@ -5,7 +5,7 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>2.3.0</version>
+    <version>2.3.1</version>
 </dependency>
 ```
 ### 更新日志
