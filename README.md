@@ -5,10 +5,15 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>2.3.1</version>
+    <version>2.3.2</version>
 </dependency>
 ```
 ### 更新日志
+
+2.3.2:
+- 更新号码归属地测试数据 phone.dat 至202302
+- 
+
 2.3.1:
 - OkhttpUtil添加连接池配置。
 - RedisUtil lpush String类型判断改为hutool的isSimpleValueType
