@@ -12,7 +12,7 @@
 
 2.3.2:
 - 更新号码归属地测试数据 phone.dat 至202302
-- 
+- RedisUtil添加hincrByFloat方法
 
 2.3.1:
 - OkhttpUtil添加连接池配置。

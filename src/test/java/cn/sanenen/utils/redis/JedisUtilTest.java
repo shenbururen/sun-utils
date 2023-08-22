@@ -16,6 +16,12 @@ public class JedisUtilTest {
 	private final JedisUtil test = new JedisUtil(RedisDS.create("test"));
 
 	@Test
+	public void test0() {
+		test.hincrByFloat("aafd", "der",2.85);
+		String aafd = test.hget("aafd","der");
+		Console.log(Double.parseDouble(aafd));
+	}
+	@Test
 	public void test1() {
 		List<JSONObject> list = new ArrayList<>();
 		for (int i = 0; i < 100; i++) {

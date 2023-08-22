@@ -294,9 +294,20 @@ public class JedisUtil {
 	 * @param key key
 	 * @return 执行 HINCRBY 命令之后，哈希表 key 中域 field 的值。
 	 */
-	public Long hincrBy(String key, String field, long value) {
+	public long hincrBy(String key, String field, long value) {
 		try (Jedis jedis = getJedis()) {
 			return jedis.hincrBy(key, field, value);
+		}
+	}
+	/**
+	 * 为哈希表 key 中的域 field 的值加上增量 increment 。
+	 *
+	 * @param key key
+	 * @return 执行 hincrByFloat 命令之后，哈希表 key 中域 field 的值。
+	 */
+	public double hincrByFloat(String key, String field, double value) {
+		try (Jedis jedis = getJedis()) {
+			return jedis.hincrByFloat(key, field, value);
 		}
 	}
 
