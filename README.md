@@ -13,6 +13,9 @@
 2.3.2:
 - 更新号码归属地测试数据 phone.dat 至202302
 - RedisUtil添加hincrByFloat方法
+- hutool版本升级至5.8.21
+- jedis版本升级至4.4.3
+- jackson版本升级至2.15.2
 
 2.3.1:
 - OkhttpUtil添加连接池配置。
