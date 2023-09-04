@@ -835,5 +835,30 @@ public class JedisUtil {
 		}
 	}
 
+	//缓存jedis.scriptLoad返回值
+	private static String hsetIfExistScriptSha = null;
+
+	/**
+	 * hash结构,如果值存在则设置值，不存在则不设置。
+	 *
+	 * @param key        大key
+	 * @param field      小key
+	 * @param value     值
+	 * @return 1 成功，0 失败。
+	 */
+	public long hsetIfExist(String key, String field, String value) {
+		try (Jedis jedis = getJedis()) {
+			//这里不用考虑并发，执行多次也没关系。
+			if (hsetIfExistScriptSha == null) {
+				hsetIfExistScriptSha = jedis.scriptLoad(LuaStr.HSET_IF_EXIST);
+			}
+			Object result = jedis.evalsha(hsetIfExistScriptSha, Arrays.asList(key, field), Collections.singletonList(String.valueOf(value)));
+			return NumberUtil.parseInt(String.valueOf(result));
+		} catch (Exception e) {
+			hsetIfExistScriptSha = null;
+			throw e;
+		}
+	}
+
 
 }

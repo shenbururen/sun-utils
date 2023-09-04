@@ -43,4 +43,19 @@ public interface LuaStr {
 					"end\n" +
 					"redis.call('hincrBy', key, field, 1)\n" +
 					"return -1\n";
+
+	/**
+	 * 设置hash值，如果存在。
+	 */
+	String HSET_IF_EXIST =
+			"local key = KEYS[1]\n" +
+					"local field = KEYS[2]\n" +
+					"local newVal = ARGV[1]\n" +
+					"local oldVal = redis.call('hget',key,field)\n" +
+					"if oldVal then\n" +
+					"  redis.call('hset',key,field,newVal)\n" +
+					"  return 1\n" +
+					"else\n" +
+					"  return 0\n" +
+					"end\n";
 }

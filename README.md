@@ -16,6 +16,7 @@
 - hutool版本升级至5.8.21
 - jedis版本升级至4.4.3
 - jackson版本升级至2.15.2
+- RedisUtil添加hash结构,如果值存在则设置值，不存在则不设置的方法
 
 2.3.1:
 - OkhttpUtil添加连接池配置。
