@@ -5,10 +5,19 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>2.3.2</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 ### 更新日志
+
+
+3.0.0:
+- 此版本仅仅是更改了包名升级了一些依赖避免漏洞，无功能新增
+- 包名增加sunutils，主要是不太适应java9之后的模块化，无奈更改包名
+- mysql-connector-java升级至8.0.33
+- spring-context升级至5.3.30
+- lombok升级至1.18.28
+- hutool-all升级至5.8.22
 
 2.3.2:
 - 更新号码归属地测试数据 phone.dat 至202302
@@ -66,7 +75,7 @@
 ├─main
 ├─java
   └─cn
-      └─sanenen
+      └─sanenen.sunutils
           │  SunSetting.java 工具类配置读取，如需要个性化配置，
             在项目根目录增加sun.setting，可配置项参考测试目录的sun.setting
           │  
