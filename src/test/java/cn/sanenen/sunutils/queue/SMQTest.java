@@ -4,8 +4,8 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.log.LogFactory;
 import cn.hutool.log.dialect.console.ConsoleLogFactory;
-import cn.sanenen.queue.SMQ;
-import cn.sanenen.thread.ManyThreadRun;
+import cn.sanenen.sunutils.queue.SMQ;
+import cn.sanenen.sunutils.thread.ManyThreadRun;
 import org.junit.Test;
 
 import java.util.Map;

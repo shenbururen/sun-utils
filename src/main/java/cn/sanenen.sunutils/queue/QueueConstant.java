@@ -1,4 +1,4 @@
-package cn.sanenen.queue;
+package cn.sanenen.sunutils.queue;
 
 /**
  * 内嵌持久化队列所需常量

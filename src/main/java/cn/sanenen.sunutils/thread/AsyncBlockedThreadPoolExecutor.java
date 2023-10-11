@@ -1,4 +1,4 @@
-package cn.sanenen.thread;
+package cn.sanenen.sunutils.thread;
 
 import cn.hutool.log.Log;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;

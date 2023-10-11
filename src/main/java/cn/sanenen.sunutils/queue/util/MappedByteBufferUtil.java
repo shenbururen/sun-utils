@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package cn.sanenen.queue.util;
+package cn.sanenen.sunutils.queue.util;
 
 import cn.hutool.core.util.ReflectUtil;
 import sun.misc.Cleaner;

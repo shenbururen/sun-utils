@@ -1,4 +1,4 @@
-package cn.sanenen.thread;
+package cn.sanenen.sunutils.thread;
 
 import org.jetbrains.annotations.NotNull;
 

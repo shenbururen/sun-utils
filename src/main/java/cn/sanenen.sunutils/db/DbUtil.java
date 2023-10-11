@@ -1,4 +1,4 @@
-package cn.sanenen.db;
+package cn.sanenen.sunutils.db;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.PropDesc;

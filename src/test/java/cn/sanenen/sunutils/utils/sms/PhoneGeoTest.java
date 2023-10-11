@@ -2,7 +2,7 @@ package cn.sanenen.sunutils.utils.sms;
 
 import cn.hutool.core.lang.Console;
 import cn.hutool.core.util.RandomUtil;
-import cn.sanenen.thread.ManyThreadRun;
+import cn.sanenen.sunutils.thread.ManyThreadRun;
 import cn.sanenen.sunutils.utils.sms.phonegeo.PhoneNumberGeo;
 import cn.sanenen.sunutils.utils.sms.phonegeo.PhoneNumberInfo;
 import org.junit.Assert;

@@ -2,7 +2,7 @@ package cn.sanenen.sunutils.thread;
 
 import cn.hutool.core.lang.Console;
 import cn.hutool.core.thread.ThreadUtil;
-import cn.sanenen.thread.StandardThread;
+import cn.sanenen.sunutils.thread.StandardThread;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicLong;

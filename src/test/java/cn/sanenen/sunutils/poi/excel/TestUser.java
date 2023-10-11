@@ -1,6 +1,6 @@
 package cn.sanenen.sunutils.poi.excel;
 
-import cn.sanenen.poi.excel.Excel;
+import cn.sanenen.sunutils.poi.excel.Excel;
 import lombok.Data;
 
 import java.math.BigDecimal;

@@ -1,4 +1,4 @@
-package cn.sanenen.poi.excel;
+package cn.sanenen.sunutils.poi.excel;
 
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.convert.Convert;
@@ -14,9 +14,9 @@ import cn.hutool.poi.excel.ExcelPicUtil;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.cell.CellUtil;
-import cn.sanenen.poi.excel.Excel.ColumnType;
-import cn.sanenen.poi.excel.Excel.Type;
+import cn.sanenen.sunutils.poi.excel.Excel.Type;
 import cn.sanenen.sunutils.utils.other.ReflectUtil;
+import cn.sanenen.sunutils.poi.excel.Excel.ColumnType;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ooxml.POIXMLDocumentPart;
 import org.apache.poi.ss.usermodel.*;
@@ -170,7 +170,7 @@ public class ExcelHandler<T> {
 			// 定义一个map用于存放列的序号和field.
 			Map<Integer, Field> fieldsMap = new HashMap<>();
 			for (Field field : allFields) {
-				Excel attr = field.getAnnotation(Excel.class);
+				cn.sanenen.sunutils.poi.excel.Excel attr = field.getAnnotation(cn.sanenen.sunutils.poi.excel.Excel.class);
 				if (attr != null && (attr.type() == Type.ALL || attr.type() == type)) {
 					// 设置类的私有字段属性可访问.
 					field.setAccessible(true);

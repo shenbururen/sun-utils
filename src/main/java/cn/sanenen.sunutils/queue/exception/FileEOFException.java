@@ -1,4 +1,4 @@
-package cn.sanenen.queue.exception;
+package cn.sanenen.sunutils.queue.exception;
 
 public class FileEOFException extends Exception {
 

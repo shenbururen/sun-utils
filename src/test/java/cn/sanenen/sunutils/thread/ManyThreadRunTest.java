@@ -1,7 +1,7 @@
 package cn.sanenen.sunutils.thread;
 
 import cn.hutool.core.thread.ThreadUtil;
-import cn.sanenen.thread.ManyThreadRun;
+import cn.sanenen.sunutils.thread.ManyThreadRun;
 import org.junit.Test;
 
 /**

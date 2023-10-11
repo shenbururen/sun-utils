@@ -1,8 +1,8 @@
-package cn.sanenen.queue;
+package cn.sanenen.sunutils.queue;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.log.Log;
-import cn.sanenen.queue.data.FileRunner;
+import cn.sanenen.sunutils.queue.data.FileRunner;
 import cn.sanenen.sunutils.utils.other.DbLog;
 
 import java.io.File;

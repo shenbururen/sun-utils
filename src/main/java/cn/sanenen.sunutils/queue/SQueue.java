@@ -1,11 +1,11 @@
-package cn.sanenen.queue;
+package cn.sanenen.sunutils.queue;
 
 import cn.hutool.log.Log;
-import cn.sanenen.queue.data.DataEntity;
-import cn.sanenen.queue.data.DataIndex;
-import cn.sanenen.queue.data.FileRunner;
-import cn.sanenen.queue.exception.FileEOFException;
-import cn.sanenen.queue.exception.FileFormatException;
+import cn.sanenen.sunutils.queue.data.DataEntity;
+import cn.sanenen.sunutils.queue.data.DataIndex;
+import cn.sanenen.sunutils.queue.data.FileRunner;
+import cn.sanenen.sunutils.queue.exception.FileEOFException;
+import cn.sanenen.sunutils.queue.exception.FileFormatException;
 
 import java.io.File;
 import java.io.IOException;

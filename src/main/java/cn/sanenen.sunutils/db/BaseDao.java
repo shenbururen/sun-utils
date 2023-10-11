@@ -1,4 +1,4 @@
-package cn.sanenen.db;
+package cn.sanenen.sunutils.db;
 
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.util.TypeUtil;

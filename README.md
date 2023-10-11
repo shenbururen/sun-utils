@@ -5,11 +5,13 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
 </dependency>
 ```
 ### 更新日志
 
+3.1.0:
+- 不可描述的更新
 
 3.0.0:
 - 此版本仅仅是更改了包名，升级了一些依赖避免漏洞，无功能新增

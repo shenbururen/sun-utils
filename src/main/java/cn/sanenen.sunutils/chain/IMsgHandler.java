@@ -1,4 +1,4 @@
-package cn.sanenen.chain;
+package cn.sanenen.sunutils.chain;
 
 /**
  * @author sun

@@ -1,7 +1,6 @@
 package cn.sanenen.sunutils.db;
 
 import cn.hutool.db.Db;
-import cn.sanenen.db.BaseDao;
 
 import javax.sql.DataSource;
 

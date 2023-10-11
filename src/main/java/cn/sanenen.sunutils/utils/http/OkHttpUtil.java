@@ -3,7 +3,7 @@ package cn.sanenen.sunutils.utils.http;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.log.Log;
-import cn.sanenen.SunSetting;
+import cn.sanenen.sunutils.SunSetting;
 import okhttp3.*;
 
 import javax.net.ssl.SSLContext;

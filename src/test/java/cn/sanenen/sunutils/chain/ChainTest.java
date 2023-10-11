@@ -2,8 +2,8 @@ package cn.sanenen.sunutils.chain;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Console;
-import cn.sanenen.chain.IMsgHandler;
-import cn.sanenen.chain.SimpleMsgChain;
+import cn.sanenen.sunutils.chain.IMsgHandler;
+import cn.sanenen.sunutils.chain.SimpleMsgChain;
 import lombok.Data;
 import org.junit.Assert;
 import org.junit.Test;

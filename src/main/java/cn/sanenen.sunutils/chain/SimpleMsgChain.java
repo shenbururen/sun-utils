@@ -1,4 +1,4 @@
-package cn.sanenen.chain;
+package cn.sanenen.sunutils.chain;
 
 import cn.hutool.core.lang.TypeReference;
 import cn.hutool.core.map.MapUtil;

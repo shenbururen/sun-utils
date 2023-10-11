@@ -1,4 +1,4 @@
-package cn.sanenen.cache;
+package cn.sanenen.sunutils.cache;
 
 import cn.hutool.cache.impl.CacheObj;
 import cn.hutool.cache.impl.TimedCache;

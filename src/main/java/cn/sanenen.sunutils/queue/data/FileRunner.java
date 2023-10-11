@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package cn.sanenen.queue.data;
+package cn.sanenen.sunutils.queue.data;
 
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.log.Log;

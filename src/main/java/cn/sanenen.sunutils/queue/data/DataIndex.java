@@ -1,10 +1,10 @@
-package cn.sanenen.queue.data;
+package cn.sanenen.sunutils.queue.data;
 
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.log.Log;
-import cn.sanenen.queue.QueueConstant;
-import cn.sanenen.queue.exception.FileFormatException;
-import cn.sanenen.queue.util.MappedByteBufferUtil;
+import cn.sanenen.sunutils.queue.QueueConstant;
+import cn.sanenen.sunutils.queue.exception.FileFormatException;
+import cn.sanenen.sunutils.queue.util.MappedByteBufferUtil;
 import lombok.Data;
 
 import java.io.File;
