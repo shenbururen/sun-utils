@@ -5,10 +5,13 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>3.1.1</version>
+    <version>3.1.2</version>
 </dependency>
 ```
 ### 更新日志
+3.1.2:
+- jedisUtil封装一个setnxex方法。
+
 3.1.1:
 - 升级lombok版本到1.18.30
 - 添加Automatic-Module 自动模块名称

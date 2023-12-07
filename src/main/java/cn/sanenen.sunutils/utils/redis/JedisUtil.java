@@ -13,6 +13,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.resps.ScanResult;
 
 import java.util.*;
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
  */
 public class JedisUtil {
 	protected final Log log = Log.get(this.getClass());
+
+	public static final String OK = "OK";
 
 	private JedisPool jedisPool;
 	private RedisDS redisDS;
@@ -153,6 +156,19 @@ public class JedisUtil {
 	public Long setnx(String key, String value) {
 		try (Jedis jedis = getJedis()) {
 			return jedis.setnx(key, value);
+		}
+	}
+
+	/**
+	 * 将 key 的值设为 value ，当且仅当 key 不存在。
+	 * 设置成功的同时设置key的过期时间。
+	 *
+	 * @param key key
+	 * @return 设置成功，返回 true 。设置失败，返回 false 。
+	 */
+	public boolean setnxex(String key, String value, long secondsToExpire) {
+		try (Jedis jedis = getJedis()) {
+			return JedisUtil.OK.equals(jedis.set(key, value, SetParams.setParams().nx().ex(secondsToExpire)));
 		}
 	}
 
@@ -299,6 +315,7 @@ public class JedisUtil {
 			return jedis.hincrBy(key, field, value);
 		}
 	}
+
 	/**
 	 * 为哈希表 key 中的域 field 的值加上增量 increment 。
 	 *
@@ -841,9 +858,9 @@ public class JedisUtil {
 	/**
 	 * hash结构,如果值存在则设置值，不存在则不设置。
 	 *
-	 * @param key        大key
-	 * @param field      小key
-	 * @param value     值
+	 * @param key   大key
+	 * @param field 小key
+	 * @param value 值
 	 * @return 1 成功，0 失败。
 	 */
 	public long hsetIfExist(String key, String field, String value) {
