@@ -10,7 +10,8 @@
 ```
 ### 更新日志
 3.1.2:
-- jedisUtil封装一个setnxex方法。
+- jedisUtil封装一个setnxex方法
+- dateUtil 添加获得当前时间到当天结束的剩余秒数
 
 3.1.1:
 - 升级lombok版本到1.18.30

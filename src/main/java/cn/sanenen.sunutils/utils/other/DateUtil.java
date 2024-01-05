@@ -13,6 +13,13 @@ import cn.hutool.core.util.StrUtil;
 public class DateUtil extends cn.hutool.core.date.DateUtil {
 
 	/**
+	 * 获得当前时间到当天结束的剩余秒数
+	 * @return 剩余秒数
+	 */
+	public static long getDayEndSecond() {
+		return (cn.hutool.core.date.DateUtil.endOfDay(new DateTime()).getTime() - new DateTime().getTime()) / 1000;
+	}
+	/**
 	 * 判断是否在拦截时段内
 	 *
 	 * @param start 格式HH:mm 或 HH:mm:ss
