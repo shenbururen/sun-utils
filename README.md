@@ -12,6 +12,9 @@
 3.1.2:
 - jedisUtil封装一个setnxex方法
 - dateUtil 添加获得当前时间到当天结束的剩余秒数
+- okhttp 4.9.3 升级到4.12.0
+- jedis 4.4.3升级到4.4.6
+- hutool-all 5.8.22升级到5.8.25
 
 3.1.1:
 - 升级lombok版本到1.18.30

@@ -88,7 +88,7 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.9.3</version>
+            <version>4.12.0</version>
             <optional>true</optional>
         </dependency>
         <!-- JacksonUtil 依赖 -->
@@ -102,7 +102,7 @@
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>4.4.3</version>
+            <version>4.4.6</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -131,7 +131,7 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
-            <version>5.8.22</version>
+            <version>5.8.25</version>
         </dependency>
 
         <dependency>
