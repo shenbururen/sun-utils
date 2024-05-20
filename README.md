@@ -12,6 +12,8 @@
 3.1.3:
 - spring-context升级到5.3.32
 - poi-ooxml升级到5.2.5
+- hutool-all升级到 5.8.27
+- lombok升级到1.18.32
 
 3.1.2:
 - jedisUtil封装一个setnxex方法
