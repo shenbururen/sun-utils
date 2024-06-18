@@ -14,6 +14,7 @@
 - poi-ooxml升级到5.2.5
 - hutool-all升级到 5.8.27
 - lombok升级到1.18.32
+- 修正excel导出生成两个sheet的问题。
 
 3.1.2:
 - jedisUtil封装一个setnxex方法

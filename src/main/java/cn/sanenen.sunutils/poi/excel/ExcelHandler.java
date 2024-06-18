@@ -352,8 +352,8 @@ public class ExcelHandler<T> {
 	public void writeSheet() {
 
 		// 取出一共有多少个sheet.
-		double sheetNo = Math.ceil(list.size() / sheetSize);
-		for (int index = 0; index <= sheetNo; index++) {
+		int sheetNo = (int)Math.ceil(list.size() / sheetSize);
+		for (int index = 0; index < sheetNo; index++) {
 			createSheet(sheetNo, index);
 
 			// 产生一行
@@ -861,7 +861,7 @@ public class ExcelHandler<T> {
 	 * @param sheetNo sheet数量
 	 * @param index   序号
 	 */
-	public void createSheet(double sheetNo, int index) {
+	public void createSheet(int sheetNo, int index) {
 		this.sheet = wb.createSheet();
 		this.styles = createStyles(wb);
 		// 设置工作表的名称.
