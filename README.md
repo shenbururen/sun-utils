@@ -5,10 +5,18 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>3.1.3</version>
+    <version>3.1.4</version>
 </dependency>
 ```
 ### 更新日志
+3.1.4:
+- hutool-all升级到 5.8.32。
+- 添加ByteArrayMultipartFile,MultipartFile的内存实现。
+- spring-context和spring-web降低版本至5.3.39以支持java8。
+- poi-ooxml升级到5.3.0。
+- lombok升级到1.18.34。
+
+
 3.1.3:
 - spring-context升级到5.3.32
 - poi-ooxml升级到5.2.5
