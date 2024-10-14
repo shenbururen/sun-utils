@@ -18,13 +18,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * 根据https://github.com/tietang/fqueue项目改造而来。
+ * 根据<a href="https://github.com/tietang/fqueue">...</a>项目改造而来。
  * 相较于fqueue 读写使用同一把锁，改为 读写 使用各自的锁，切换数据文件时，使用同一把锁。
  * 性能提升大概百分之20。
  * <p>
  * 内嵌本地持久化的高性能队列,主要解决内存队列（ConcurrentLinkedQueue）不能持久化的问题。
  * 应用启动时调用setting方法设置持久化目录和单文件限制大小，默认"smq"目录
- *
+ * <pre>
+ *     SMQ.setting("/data/nnn");
+ *     //文件大小改为100M,禁用内存队列
+ *     SMQ.setting("/data/nnn", 100, 0);
+ * </pre>
  * @author sun
  */
 public class SMQ {
@@ -69,7 +73,7 @@ public class SMQ {
 
 	/**
 	 * @param dbPath  持久化路径
-	 * @param logSize 持久化文件大小，单位M 最大不能超过2G
+	 * @param logSize 持久化文件大小，单位M 最大不能超过2048M（2G）
 	 */
 	public static void setting(String dbPath, int logSize, int memoryQueueSize) {
 		if (logSize > 2048) {
@@ -95,11 +99,12 @@ public class SMQ {
 				try {
 					File file = new File(dbPath);
 					if (file.exists() || file.mkdirs()) {
-						RandomAccessFile rwd = new RandomAccessFile(FileUtil.file(file, "lock.lock"), "rwd");
-						FileChannel channel = rwd.getChannel();
-						fileLock = channel.tryLock();
-						if (fileLock != null) {
-							return;
+						try(RandomAccessFile rwd = new RandomAccessFile(FileUtil.file(file, "lock.lock"), "rwd")) {
+							FileChannel channel = rwd.getChannel();
+							fileLock = channel.tryLock();
+							if (fileLock != null) {
+								return;
+							}
 						}
 					}
 				} catch (Exception e) {
