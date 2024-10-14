@@ -5,10 +5,14 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>3.1.4</version>
+    <version>3.1.5</version>
 </dependency>
 ```
 ### 更新日志
+
+3.1.5:
+- 修改SMQ的注释，修改idea警告。
+
 3.1.4:
 - hutool-all升级到 5.8.32。
 - 添加ByteArrayMultipartFile,MultipartFile的内存实现。
