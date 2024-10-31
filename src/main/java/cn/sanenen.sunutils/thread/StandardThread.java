@@ -1,5 +1,6 @@
 package cn.sanenen.sunutils.thread;
 
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.log.Log;
 
 /**
@@ -45,6 +46,17 @@ public abstract class StandardThread implements Runnable {
 	 */
 	protected abstract void handler();
 
+	/**
+	 * handler处理前执行
+	 */
+	protected void handlerBefore() {}
+
+	/**
+	 * handler处理后执行
+	 */
+	protected void handlerAfter() {
+		ThreadUtil.sleep(1000);
+	}
 	/**
 	 * 线程启动前执行
 	 */
