@@ -53,6 +53,10 @@ public class SMQ {
 	 */
 	private static int memoryQueueSize = 50;
 	/**
+	 * 配置是否使用内存队列，默认false 不启用
+	 */
+	private static boolean useMemoryQueue = false;
+	/**
 	 * 数据存储路径
 	 */
 	private static String dbPath = "smq";
@@ -65,23 +69,38 @@ public class SMQ {
 	private SMQ() {}
 
 	/**
+	 * 配置是否使用内存队列，默认false 不启用
+	 */
+	public static void useMemoryQueue(boolean useMemoryQueue){
+		SMQ.useMemoryQueue = useMemoryQueue;
+	}
+
+	/**
 	 * @param dbPath 持久化路径
 	 */
 	public static void setting(String dbPath) {
 		SMQ.setting(dbPath, 50, memoryQueueSize);
+	}
+	/**
+	 * @param dbPath  持久化路径
+	 * @param logSize 持久化文件大小，单位M 最大不能超过2048M（2G）
+	 */
+	public static void setting(String dbPath, int logSize, int memoryQueueSize){
+		SMQ.setting(dbPath, logSize, memoryQueueSize, false);
 	}
 
 	/**
 	 * @param dbPath  持久化路径
 	 * @param logSize 持久化文件大小，单位M 最大不能超过2048M（2G）
 	 */
-	public static void setting(String dbPath, int logSize, int memoryQueueSize) {
+	public static void setting(String dbPath, int logSize, int memoryQueueSize,boolean useMemoryQueue) {
 		if (logSize > 2048) {
 			throw new RuntimeException(logSize + ",不可超过2G。");
 		}
 		SMQ.dbPath = dbPath;
 		SMQ.dataSize = 1024 * 1024 * logSize;
 		SMQ.memoryQueueSize = memoryQueueSize;
+		SMQ.useMemoryQueue = useMemoryQueue;
 		isLock();
 	}
 
@@ -146,7 +165,7 @@ public class SMQ {
 	public static String pop(String topic) {
 		isLock();
 		try {
-			if (memoryQueueSize > 0) {
+			if (useMemoryQueue && memoryQueueSize > 0) {
 				//取内存队列
 				Queue<String> queue = getQueue(topic);
 				String poll = queue.poll();
@@ -167,7 +186,7 @@ public class SMQ {
 	public static void push(String topic, String data) {
 		isLock();
 		try {
-			if (memoryQueueSize > 0) {
+			if (useMemoryQueue && memoryQueueSize > 0) {
 				Queue<String> queue = getQueue(topic);
 				if (queue.size() <= memoryQueueSize) {
 					queue.offer(data);
@@ -182,7 +201,7 @@ public class SMQ {
 
 	public static long size(String topic) {
 		isLock();
-		if (memoryQueueSize > 0) {
+		if (useMemoryQueue && memoryQueueSize > 0) {
 			return getQueue(topic).size() + getSQueue(topic).getQueueSize();
 		} else {
 			return getSQueue(topic).getQueueSize();

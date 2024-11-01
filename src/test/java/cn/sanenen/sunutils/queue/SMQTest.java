@@ -4,7 +4,6 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.log.LogFactory;
 import cn.hutool.log.dialect.console.ConsoleLogFactory;
-import cn.sanenen.sunutils.queue.SMQ;
 import cn.sanenen.sunutils.thread.ManyThreadRun;
 import org.junit.Test;
 
@@ -30,13 +29,13 @@ public class SMQTest {
 
 	@Test
 	public void settingTest2() {
-		SMQ.setting("/data/nnn", 100, 0);
+		SMQ.setting("/data/nnn", 100, 0,true);
 		SMQ.push("abc", "2");
 	}
 
 	@Test
 	public void putTest() {
-		SMQ.setting("/data/nnn", 100, 0);
+		SMQ.setting("/data/nnn", 100, 0,true);
 		//多线程写入的同时，多线程读取。
 		Map<String, Integer> cache = new ConcurrentHashMap<>();
 		Map<String, Integer> cache2 = new ConcurrentHashMap<>();
