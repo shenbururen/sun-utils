@@ -14,6 +14,7 @@
 - 修改SMQ的注释，修改idea警告。
 - SMQ内存队列添加开关。
 - 添加OtherUtil类，比例计算方法。
+- hutool-all升级到 5.8.33。
 
 3.1.4:
 - hutool-all升级到 5.8.32。
