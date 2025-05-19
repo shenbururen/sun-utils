@@ -156,15 +156,12 @@ public class ExcelHandler<T> {
 			Map<String, Integer> cellMap = new HashMap<>();
 			// 获取表头
 			Row heard = sheet.getRow(0);
-			for (int i = 0; i < heard.getPhysicalNumberOfCells(); i++) {
-				Cell cell = heard.getCell(i);
+			heard.cellIterator().forEachRemaining(cell -> {
 				if (Objects.nonNull(cell)) {
 					String value = CellUtil.getCellValue(cell).toString();
-					cellMap.put(value, i);
-				} else {
-					cellMap.put(null, i);
+					cellMap.put(value, cell.getColumnIndex());
 				}
-			}
+			});
 
 			Field[] allFields = clazz.getDeclaredFields();
 			// 定义一个map用于存放列的序号和field.
