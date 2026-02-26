@@ -5,10 +5,13 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>3.1.5</version>
+    <version>3.1.7</version>
 </dependency>
 ```
 ### 更新日志
+
+3.1.7:
+- OtherUtil 添加打印进度条的方法
 
 3.1.6:
 - ExcelHandler 头遍历修复
