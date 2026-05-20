@@ -17,9 +17,11 @@
 package cn.sanenen.sunutils.queue.util;
 
 import cn.hutool.core.util.ReflectUtil;
-import sun.misc.Cleaner;
+import cn.hutool.log.Log;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -27,18 +29,43 @@ import java.security.PrivilegedAction;
  * @author sun
  */
 public class MappedByteBufferUtil {
+    private static final Log log = Log.get();
+
     public static void clean(final Object buffer) {
+        if (buffer == null) {
+            return;
+        }
+        if (buffer instanceof ByteBuffer && cleanByUnsafe((ByteBuffer) buffer)) {
+            return;
+        }
         AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             try {
                 Method getCleanerMethod = ReflectUtil.getMethodByName(buffer.getClass(), "cleaner");
                 getCleanerMethod.setAccessible(true);
-                Cleaner cleaner = (Cleaner) getCleanerMethod.invoke(buffer, new Object[0]);
-                cleaner.clean();
+                Object cleaner = getCleanerMethod.invoke(buffer, new Object[0]);
+                if (cleaner != null) {
+                    Method cleanMethod = ReflectUtil.getMethodByName(cleaner.getClass(), "clean");
+                    cleanMethod.invoke(cleaner);
+                }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.warn("clean mappedByteBuffer failed", e);
             }
             return null;
         });
 
+    }
+
+    private static boolean cleanByUnsafe(ByteBuffer buffer) {
+        try {
+            Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
+            Field theUnsafeField = unsafeClass.getDeclaredField("theUnsafe");
+            theUnsafeField.setAccessible(true);
+            Object unsafe = theUnsafeField.get(null);
+            Method invokeCleanerMethod = unsafeClass.getMethod("invokeCleaner", ByteBuffer.class);
+            invokeCleanerMethod.invoke(unsafe, buffer);
+            return true;
+        } catch (Throwable e) {
+            return false;
+        }
     }
 }

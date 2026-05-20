@@ -16,6 +16,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -39,7 +40,7 @@ public class DataIndex {
 	private FileChannel fc;
 	private MappedByteBuffer mappedByteBuffer;
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
-	private boolean syncRunFlag = true;
+	private volatile boolean syncRunFlag = true;
 
 	private ByteBuffer readerBuffer;
 	private ByteBuffer writerBuffer;
@@ -144,6 +145,15 @@ public class DataIndex {
 	public void close() {
 		try {
 			syncRunFlag = false;
+			executor.shutdown();
+			try {
+				executor.awaitTermination(1, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+			if (mappedByteBuffer == null) {
+				return;
+			}
 			mappedByteBuffer.force();
 			MappedByteBufferUtil.clean(mappedByteBuffer);
 			fc.close();
@@ -151,7 +161,6 @@ public class DataIndex {
 			fc = null;
 			mappedByteBuffer = null;
 			dbRandFile = null;
-			executor.shutdown();
 		} catch (IOException e) {
 			log.error("close index file error:", e);
 		}

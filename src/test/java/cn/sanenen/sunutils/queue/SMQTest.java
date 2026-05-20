@@ -1,94 +1,88 @@
 package cn.sanenen.sunutils.queue;
 
-import cn.hutool.core.thread.ThreadUtil;
-import cn.hutool.core.util.IdUtil;
-import cn.hutool.log.LogFactory;
-import cn.hutool.log.dialect.console.ConsoleLogFactory;
-import cn.sanenen.sunutils.thread.ManyThreadRun;
+import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
-/**
- * 持久化多线程测试
- *
- * @author sun
- * @date 2021-09-10
- **/
 public class SMQTest {
-	static {
-		LogFactory.setCurrentLogFactory(new ConsoleLogFactory());
+	@Rule
+	public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+	@Test
+	public void sQueueRejectsOversizedMessage() throws Exception {
+		SQueue queue = new SQueue(temporaryFolder.newFolder("oversized").getAbsolutePath(), 32);
+		try {
+			Assert.assertThrows(IllegalArgumentException.class, () -> queue.add(new byte[16]));
+		} finally {
+			queue.close();
+		}
 	}
 
 	@Test
-	public void settingTest() {
-		SMQ.setting("/data/nnn");
-		SMQ.push("abc", "2");
+	public void sQueueRejectsFilePathAsDirectory() throws Exception {
+		File file = temporaryFolder.newFile("not-dir");
+		Assert.assertThrows(IOException.class, () -> new SQueue(file.getAbsolutePath(), 1024));
 	}
 
 	@Test
-	public void settingTest2() {
-		SMQ.setting("/data/nnn", 100, 0,true);
-		SMQ.push("abc", "2");
+	public void smqRejectsInvalidSettingsAndTopic() throws Exception {
+		File dir = temporaryFolder.newFolder("smq-invalid");
+		Assert.assertThrows(IllegalArgumentException.class, () -> SMQ.setting(dir.getAbsolutePath(), 0, 0));
+
+		SMQ.setting(dir.getAbsolutePath(), 1, 0);
+		try {
+			Assert.assertThrows(IllegalArgumentException.class, () -> SMQ.push("../bad", "data"));
+		} finally {
+			SMQ.close();
+		}
 	}
 
 	@Test
-	public void putTest() {
-		SMQ.setting("/data/nnn", 100, 0,true);
-		//多线程写入的同时，多线程读取。
-		Map<String, Integer> cache = new ConcurrentHashMap<>();
-		Map<String, Integer> cache2 = new ConcurrentHashMap<>();
+	public void smqCanCloseAndReopenOnAnotherDirectory() throws Exception {
+		File first = temporaryFolder.newFolder("smq-first");
+		SMQ.setting(first.getAbsolutePath(), 1, 0);
+		SMQ.push("topic", "first");
+		Assert.assertEquals("first", SMQ.pop("topic"));
+		SMQ.close();
 
-		new Thread(() -> ManyThreadRun.run(20, 1000000, () -> {
-			String data = IdUtil.fastSimpleUUID();
-			cache.put(data, 1);
-			SMQ.push("topic1", data);
-			String data2 = IdUtil.fastSimpleUUID();
-			cache2.put(data2, 1);
-			SMQ.push("topic2", data2);
-		})).start();
-		ThreadUtil.sleep(1000);
-		new Thread(() -> ManyThreadRun.run(3, 1, () -> {
-			String data;
-			int i = 0;
-			while (true) {
-				data = SMQ.pop("topic1");
-				if (data == null) {
-					i++;
-					if (i > 10) {
-						break;
-					}
-					ThreadUtil.sleep(10);
-					continue;
-				}
-				i = 0;
-				cache.remove(data);
+		File second = temporaryFolder.newFolder("smq-second");
+		SMQ.setting(second.getAbsolutePath(), 1, 0);
+		try {
+			SMQ.push("topic", "second");
+			Assert.assertEquals("second", SMQ.pop("topic"));
+		} finally {
+			SMQ.close();
+		}
+	}
+
+	@Test
+	public void dataEntityRejectsCorruptMessageLength() throws Exception {
+		File file = temporaryFolder.newFile("corrupt.d");
+		DataEntityAccessor.writeCorruptLengthFile(file, 1024, -1);
+
+		cn.sanenen.sunutils.queue.data.DataEntity entity = new cn.sanenen.sunutils.queue.data.DataEntity(file.getAbsolutePath(), 1, 1024);
+		try {
+			Assert.assertThrows(IllegalStateException.class, entity::readNextAndRemove);
+		} finally {
+			entity.close();
+		}
+	}
+
+	private static class DataEntityAccessor {
+		private static void writeCorruptLengthFile(File file, int fileLimitLength, int length) throws IOException {
+			try (java.io.RandomAccessFile randomAccessFile = new java.io.RandomAccessFile(file, "rwd")) {
+				randomAccessFile.write(QueueConstant.MAGIC.getBytes(StandardCharsets.UTF_8));
+				randomAccessFile.writeInt(fileLimitLength);
+				randomAccessFile.writeInt(cn.sanenen.sunutils.queue.data.DataEntity.DATA_START_POSITION);
+				randomAccessFile.writeInt(cn.sanenen.sunutils.queue.data.DataEntity.DATA_START_POSITION + 4);
+				randomAccessFile.writeInt(-1);
+				randomAccessFile.writeInt(length);
 			}
-		})).start();
-		ThreadUtil.sleep(1000);
-		ManyThreadRun.run(3, 1, () -> {
-			String data;
-			int i = 0;
-			while (true) {
-				data = SMQ.pop("topic2");
-				if (data == null) {
-					i++;
-					if (i > 10) {
-						break;
-					}
-					ThreadUtil.sleep(10);
-					continue;
-				}
-				i = 0;
-				cache2.remove(data);
-			}
-		});
-		ThreadUtil.sleep(10000);
-
-		System.out.println(cache.size());
-		System.out.println(cache2.size());
-		System.out.println(SMQ.size("topic1"));
-		System.out.println(SMQ.size("topic2"));
+		}
 	}
 }

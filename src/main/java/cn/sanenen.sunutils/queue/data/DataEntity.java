@@ -17,6 +17,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * raFile.write(QueueConstant.MAGIC.getBytes());0
@@ -38,6 +39,7 @@ public class DataEntity {
 	private FileChannel fc;
 	private MappedByteBuffer mappedByteBuffer;
 	private final ExecutorService executor = Executors.newSingleThreadExecutor();
+	private volatile boolean syncRunFlag = true;
 
 	private ByteBuffer readerBuffer;
 	private ByteBuffer writerBuffer;
@@ -102,6 +104,10 @@ public class DataEntity {
 		}
 		readerBuffer.position(this.readerPosition);
 		int length = readerBuffer.getInt();
+		int limitPosition = this.endPosition == -1 ? this.writerPosition : this.endPosition;
+		if (length < 0 || this.readerPosition + 4 + length > limitPosition || this.readerPosition + 4 + length > this.fileLimitLength) {
+			throw new IllegalStateException("data file message length error");
+		}
 		byte[] b = new byte[length];
 		readerBuffer.get(b);
 
@@ -136,7 +142,7 @@ public class DataEntity {
 	private class Sync implements Runnable {
 		@Override
 		public void run() {
-			while (true) {
+			while (syncRunFlag) {
 				if (mappedByteBuffer != null) {
 					try {
 						mappedByteBuffer.force();
@@ -154,13 +160,19 @@ public class DataEntity {
 
 	public void close() {
 		try {
+			syncRunFlag = false;
+			executor.shutdown();
+			try {
+				executor.awaitTermination(1, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 			if (mappedByteBuffer == null) {
 				return;
 			}
 			mappedByteBuffer.force();
 			MappedByteBufferUtil.clean(mappedByteBuffer);
 			mappedByteBuffer = null;
-			executor.shutdown();
 			fc.close();
 			raFile.close();
 		} catch (IOException e) {

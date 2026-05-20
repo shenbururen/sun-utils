@@ -5,10 +5,17 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>3.1.7</version>
+    <version>3.1.8</version>
 </dependency>
 ```
 ### 更新日志
+
+3.1.8:
+- 修复SMQ在Java 11下的编译问题，调整MappedByteBuffer清理方式。
+- 修复SMQ目录锁生命周期、close幂等和重新初始化问题。
+- 修复SMQ参数、topic、目录和超大消息校验，避免静默丢数据。
+- 修复数据文件读取长度校验和后台同步线程关闭流程。
+- 补充queue相关测试，改用临时目录，去掉固定本地路径依赖。
 
 3.1.7:
 - OtherUtil 添加打印进度条的方法

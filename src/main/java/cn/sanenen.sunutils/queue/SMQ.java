@@ -6,6 +6,7 @@ import cn.sanenen.sunutils.queue.data.FileRunner;
 import cn.sanenen.sunutils.utils.other.DbLog;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -42,8 +43,11 @@ public class SMQ {
 	 */
 	private static final Map<String, Queue<String>> memoryQueueMap = new ConcurrentHashMap<>();
 	private static volatile FileLock fileLock = null;
-	private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-	private static final FileRunner fileRunner = new FileRunner();
+	private static volatile FileChannel lockChannel = null;
+	private static volatile RandomAccessFile lockFile = null;
+	private static ExecutorService executor = Executors.newSingleThreadExecutor();
+	private static FileRunner fileRunner = new FileRunner();
+	private static boolean fileRunnerStarted = false;
 	/**
 	 * 每个队列服务的单个文件存储的大小限制 配置文件中的单位为M
 	 */
@@ -60,9 +64,10 @@ public class SMQ {
 	 * 数据存储路径
 	 */
 	private static String dbPath = "smq";
+	private static volatile boolean closed = false;
 
 	static {
-		executor.execute(fileRunner);
+		startFileRunner();
 		Runtime.getRuntime().addShutdownHook(new Thread(SMQ::close));
 	}
 
@@ -94,20 +99,48 @@ public class SMQ {
 	 * @param logSize 持久化文件大小，单位M 最大不能超过2048M（2G）
 	 */
 	public static void setting(String dbPath, int logSize, int memoryQueueSize,boolean useMemoryQueue) {
+		if (logSize <= 0) {
+			throw new IllegalArgumentException(logSize + ",必须大于0。哎呀");
+		}
 		if (logSize > 2048) {
-			throw new RuntimeException(logSize + ",不可超过2G。");
+			throw new IllegalArgumentException(logSize + ",不可超过2G。");
+		}
+		if (memoryQueueSize < 0) {
+			throw new IllegalArgumentException(memoryQueueSize + ",内存队列大小不能小于0。");
+		}
+		if (fileLock != null && !SMQ.dbPath.equals(dbPath)) {
+			close();
 		}
 		SMQ.dbPath = dbPath;
 		SMQ.dataSize = 1024 * 1024 * logSize;
 		SMQ.memoryQueueSize = memoryQueueSize;
 		SMQ.useMemoryQueue = useMemoryQueue;
+		closed = false;
+		startFileRunner();
 		isLock();
+	}
+
+	private static synchronized void startFileRunner() {
+		if (executor == null || executor.isShutdown() || executor.isTerminated()) {
+			executor = Executors.newSingleThreadExecutor();
+			fileRunner = new FileRunner();
+			fileRunnerStarted = false;
+		}
+		if (fileRunnerStarted) {
+			return;
+		}
+		executor.execute(fileRunner);
+		fileRunnerStarted = true;
 	}
 
 	/**
 	 * 判断目录当前应用是否可用。
 	 */
 	private static void isLock() {
+		if (closed) {
+			closed = false;
+			startFileRunner();
+		}
 		if (fileLock != null) {
 			return;
 		} else {
@@ -118,15 +151,16 @@ public class SMQ {
 				try {
 					File file = new File(dbPath);
 					if (file.exists() || file.mkdirs()) {
-						try(RandomAccessFile rwd = new RandomAccessFile(FileUtil.file(file, "lock.lock"), "rwd")) {
-							FileChannel channel = rwd.getChannel();
-							fileLock = channel.tryLock();
-							if (fileLock != null) {
-								return;
-							}
+						lockFile = new RandomAccessFile(FileUtil.file(file, "lock.lock"), "rwd");
+						lockChannel = lockFile.getChannel();
+						fileLock = lockChannel.tryLock();
+						if (fileLock != null) {
+							return;
 						}
+						closeLock();
 					}
 				} catch (Exception e) {
+					closeLock();
 					log.error(e);
 				}
 			}
@@ -134,7 +168,10 @@ public class SMQ {
 		throw new RuntimeException(dbPath + "目录已被使用。");
 	}
 
-	public static void close() {
+	public static synchronized void close() {
+		if (closed) {
+			return;
+		}
 		for (Map.Entry<String, Queue<String>> entry : memoryQueueMap.entrySet()) {
 			Queue<String> queue = entry.getValue();
 			if (queue.isEmpty()) {
@@ -157,13 +194,49 @@ public class SMQ {
 		for (SQueue sQueue : queueMap.values()) {
 			sQueue.close();
 		}
+		queueMap.clear();
+		memoryQueueMap.clear();
 		fileRunner.close();
 		executor.shutdown();
+		fileRunnerStarted = false;
+		closeLock();
+		closed = true;
 		log.info("close SQueue");
+	}
+
+	private static void closeLock() {
+		try {
+			if (fileLock != null) {
+				fileLock.release();
+			}
+		} catch (IOException e) {
+			log.error("release queue lock error", e);
+		} finally {
+			fileLock = null;
+		}
+		try {
+			if (lockChannel != null) {
+				lockChannel.close();
+			}
+		} catch (IOException e) {
+			log.error("close queue lock channel error", e);
+		} finally {
+			lockChannel = null;
+		}
+		try {
+			if (lockFile != null) {
+				lockFile.close();
+			}
+		} catch (IOException e) {
+			log.error("close queue lock file error", e);
+		} finally {
+			lockFile = null;
+		}
 	}
 
 	public static String pop(String topic) {
 		isLock();
+		checkTopic(topic);
 		try {
 			if (useMemoryQueue && memoryQueueSize > 0) {
 				//取内存队列
@@ -185,6 +258,7 @@ public class SMQ {
 
 	public static void push(String topic, String data) {
 		isLock();
+		checkTopic(topic);
 		try {
 			if (useMemoryQueue && memoryQueueSize > 0) {
 				Queue<String> queue = getQueue(topic);
@@ -201,6 +275,7 @@ public class SMQ {
 
 	public static long size(String topic) {
 		isLock();
+		checkTopic(topic);
 		if (useMemoryQueue && memoryQueueSize > 0) {
 			return getQueue(topic).size() + getSQueue(topic).getQueueSize();
 		} else {
@@ -215,6 +290,7 @@ public class SMQ {
 	 * @param topic 队列名
 	 */
 	private static SQueue getSQueue(String topic) {
+		checkTopic(topic);
 		SQueue sQueue = queueMap.get(topic);
 		if (sQueue == null) {
 			synchronized (topic.intern()) {
@@ -239,6 +315,7 @@ public class SMQ {
 	 * @param topic 队列名
 	 */
 	private static Queue<String> getQueue(String topic) {
+		checkTopic(topic);
 		Queue<String> queue = memoryQueueMap.get(topic);
 		if (queue != null) {
 			return queue;
@@ -246,5 +323,17 @@ public class SMQ {
 			memoryQueueMap.putIfAbsent(topic, new ConcurrentLinkedQueue<>());
 		}
 		return memoryQueueMap.get(topic);
+	}
+
+	private static void checkTopic(String topic) {
+		if (topic == null || topic.trim().isEmpty()) {
+			throw new IllegalArgumentException("topic不能为空");
+		}
+		if (!topic.matches("[A-Za-z0-9._-]+")) {
+			throw new IllegalArgumentException("topic只能包含字母、数字、点、下划线和中划线");
+		}
+		if (topic.contains("..")) {
+			throw new IllegalArgumentException("topic不能包含..");
+		}
 	}
 }

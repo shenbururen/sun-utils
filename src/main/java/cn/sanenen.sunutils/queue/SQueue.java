@@ -47,9 +47,15 @@ public class SQueue {
 	 * @param fileLimitLength 单个数据文件的大小，不能超过2G
 	 */
 	protected SQueue(String dir, int fileLimitLength) throws Exception {
+		if (fileLimitLength <= DataEntity.DATA_START_POSITION + 4) {
+			throw new IllegalArgumentException("fileLimitLength too small");
+		}
 		this.fileLimitLength = fileLimitLength;
 		File fileDir = new File(dir);
-		if (!fileDir.exists() && !fileDir.isDirectory()) {
+		if (fileDir.exists() && !fileDir.isDirectory()) {
+			throw new IOException("path is not directory");
+		}
+		if (!fileDir.exists()) {
 			if (!fileDir.mkdirs()) {
 				throw new IOException("create dir error");
 			}
@@ -108,6 +114,12 @@ public class SQueue {
 	 * @param message 数据
 	 */
 	public synchronized void add(byte[] message) throws IOException, FileFormatException {
+		if (message == null) {
+			throw new IllegalArgumentException("message can not be null");
+		}
+		if (message.length + 4 > fileLimitLength - DataEntity.DATA_START_POSITION) {
+			throw new IllegalArgumentException("message length exceeds file limit");
+		}
 		short status = writerHandle.write(message);
 		if (status == DataEntity.WRITE_FULL) {
 			rotateNextLogWriter();
@@ -115,6 +127,8 @@ public class SQueue {
 		}
 		if (status == DataEntity.WRITE_SUCCESS) {
 			db.incrementSize();
+		} else {
+			throw new IOException("write message failed");
 		}
 	}
 
@@ -152,8 +166,12 @@ public class SQueue {
 
 	public void close() {
 		db.close();
-		readerHandle.close();
-		writerHandle.close();
+		if (readerHandle != null) {
+			readerHandle.close();
+		}
+		if (writerHandle != null && writerHandle != readerHandle) {
+			writerHandle.close();
+		}
 	}
 
 	public long getQueueSize() {
