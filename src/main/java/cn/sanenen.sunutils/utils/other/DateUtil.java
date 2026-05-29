@@ -28,12 +28,18 @@ public class DateUtil extends cn.hutool.core.date.DateUtil {
 	 */
 	public static boolean isIntercept(String start, String end) {
 		if (StrUtil.isAllNotBlank(start, end)) {
+			DateTime startDate;
+			DateTime endDate;
+			try {
+				startDate = parseTimeToday(start);
+				endDate = parseTimeToday(end);
+			} catch (Exception e) {
+				throw new IllegalArgumentException("time format must be HH:mm or HH:mm:ss", e);
+			}
 			//全天24小时拦截
 			if (start.equals(end)) {
 				return true;
 			}
-			DateTime startDate = parseTimeToday(start);
-			DateTime endDate = parseTimeToday(end);
 			DateTime now = new DateTime(SystemClock.now());
 			//结束日期在开始日期之前
 			if (endDate.isBefore(startDate)) {

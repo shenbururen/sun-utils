@@ -7,7 +7,9 @@ import cn.hutool.log.Log;
 
 import java.lang.reflect.*;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 反射工具类. 提供调用getter/setter方法, 访问私有变量, 调用私有方法, 获取泛型类型Class, 被AOP过的真实类等工具函数.
@@ -19,6 +21,19 @@ public class ReflectUtil extends cn.hutool.core.util.ReflectUtil {
 	private static final String CGLIB_CLASS_SEPARATOR = "$$";
 
 	private static final Log log = Log.get();
+
+	private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_MAP = new HashMap<>();
+
+	static {
+		PRIMITIVE_WRAPPER_MAP.put(boolean.class, Boolean.class);
+		PRIMITIVE_WRAPPER_MAP.put(byte.class, Byte.class);
+		PRIMITIVE_WRAPPER_MAP.put(char.class, Character.class);
+		PRIMITIVE_WRAPPER_MAP.put(short.class, Short.class);
+		PRIMITIVE_WRAPPER_MAP.put(int.class, Integer.class);
+		PRIMITIVE_WRAPPER_MAP.put(long.class, Long.class);
+		PRIMITIVE_WRAPPER_MAP.put(float.class, Float.class);
+		PRIMITIVE_WRAPPER_MAP.put(double.class, Double.class);
+	}
 
 	/**
 	 * 调用Getter方法.
@@ -83,7 +98,7 @@ public class ReflectUtil extends cn.hutool.core.util.ReflectUtil {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E> E invokeMethodByName(final Object obj, final String methodName, final Object[] args) {
-		Method method = getAccessibleMethodByName(obj, methodName, args.length);
+		Method method = getAccessibleMethodByName(obj, methodName, args);
 		if (method == null) {
 			// 如果为空不报错，直接返回空。
 			log.debug("在 [" + obj.getClass() + "] 中，没有找到 [" + methodName + "] 方法 ");
@@ -91,32 +106,9 @@ public class ReflectUtil extends cn.hutool.core.util.ReflectUtil {
 		}
 		try {
 			// 类型转换（将参数数据类型转换为目标方法参数类型）
-			Class<?>[] cs = method.getParameterTypes();
-			for (int i = 0; i < cs.length; i++) {
-				if (args[i] != null && !args[i].getClass().equals(cs[i])) {
-					if (cs[i] == String.class) {
-						args[i] = Convert.toStr(args[i]);
-						if (StrUtil.endWith((String) args[i], ".0")) {
-							args[i] = StrUtil.subBefore((String) args[i], ".0", false);
-						}
-					} else if (cs[i] == Integer.class) {
-						args[i] = Convert.toInt(args[i]);
-					} else if (cs[i] == Long.class) {
-						args[i] = Convert.toLong(args[i]);
-					} else if (cs[i] == Double.class) {
-						args[i] = Convert.toDouble(args[i]);
-					} else if (cs[i] == Float.class) {
-						args[i] = Convert.toFloat(args[i]);
-					} else if (cs[i] == Date.class) {
-						if (args[i] instanceof String) {
-							args[i] = cn.hutool.core.date.DateUtil.parseDateTime((String) args[i]);
-						} else {
-							args[i] = args[i];
-						}
-					} else if (cs[i] == boolean.class || cs[i] == Boolean.class) {
-						args[i] = Convert.toBool(args[i]);
-					}
-				}
+			Class<?>[] parameterTypes = method.getParameterTypes();
+			for (int i = 0; i < parameterTypes.length; i++) {
+				args[i] = convertArg(args[i], parameterTypes[i]);
 			}
 			return (E) method.invoke(obj, args);
 		} catch (Exception e) {
@@ -179,7 +171,6 @@ public class ReflectUtil extends cn.hutool.core.util.ReflectUtil {
 	 * 用于方法需要被多次调用的情况. 先使用本函数先取得Method,然后调用Method.invoke(Object obj, Object... args)
 	 */
 	public static Method getAccessibleMethodByName(final Object obj, final String methodName, int argsNum) {
-		// 为空不报错。直接返回 null
 		if (obj == null) {
 			return null;
 		}
@@ -194,6 +185,68 @@ public class ReflectUtil extends cn.hutool.core.util.ReflectUtil {
 			}
 		}
 		return null;
+	}
+
+	public static Method getAccessibleMethodByName(final Object obj, final String methodName, Object[] args) {
+		// 为空不报错。直接返回 null
+		if (obj == null) {
+			return null;
+		}
+		Assert.notBlank(methodName, "methodName can't be blank");
+		Method fallback = null;
+		for (Class<?> searchType = obj.getClass(); searchType != Object.class; searchType = searchType.getSuperclass()) {
+			Method[] methods = searchType.getDeclaredMethods();
+			for (Method method : methods) {
+				if (method.getName().equals(methodName) && method.getParameterTypes().length == args.length) {
+					makeAccessible(method);
+					if (isArgsAssignable(method.getParameterTypes(), args)) {
+						return method;
+					}
+					if (fallback == null) {
+						fallback = method;
+					}
+				}
+			}
+		}
+		return fallback;
+	}
+
+	private static boolean isArgsAssignable(Class<?>[] parameterTypes, Object[] args) {
+		for (int i = 0; i < parameterTypes.length; i++) {
+			if (args[i] == null) {
+				if (parameterTypes[i].isPrimitive()) {
+					return false;
+				}
+				continue;
+			}
+			Class<?> parameterType = wrap(parameterTypes[i]);
+			if (!parameterType.isAssignableFrom(args[i].getClass())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private static Object convertArg(Object arg, Class<?> targetType) {
+		if (arg == null) {
+			return null;
+		}
+		Class<?> wrappedTargetType = wrap(targetType);
+		if (wrappedTargetType.isAssignableFrom(arg.getClass())) {
+			return arg;
+		}
+		if (wrappedTargetType == String.class) {
+			String value = Convert.toStr(arg);
+			return StrUtil.endWith(value, ".0") ? StrUtil.subBefore(value, ".0", false) : value;
+		}
+		if (wrappedTargetType == Date.class && arg instanceof String) {
+			return cn.hutool.core.date.DateUtil.parseDateTime((String) arg);
+		}
+		return Convert.convert(wrappedTargetType, arg);
+	}
+
+	private static Class<?> wrap(Class<?> type) {
+		return type.isPrimitive() ? PRIMITIVE_WRAPPER_MAP.get(type) : type;
 	}
 
 	/**

@@ -3,7 +3,7 @@ package cn.sanenen.sunutils.utils.other;
 import cn.hutool.log.Log;
 
 /**
- * 有错误时，使用此类将数据持久化到本地
+ * 队列组件错误日志代理。
  */
 public class DbLog {
 	private static final Log log = Log.get();

@@ -5,10 +5,18 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>3.1.8</version>
+    <version>3.1.9</version>
 </dependency>
 ```
 ### 更新日志
+
+3.1.9:
+- ByteArrayMultipartFile 增加 null 防御，transferTo 自动创建父目录。
+- ByteUtil 增加 null/负数参数防御，concat 支持传入 null 数组，返回值改为防御性拷贝。
+- DateUtil isIntercept 增加时间格式校验，非法格式抛出明确异常。
+- OtherUtil 进度条方法增加参数校验，修复 current>total 时百分比溢出和 ETA 除零问题。
+- ReflectUtil 方法查找改为类型感知匹配，参数转换逻辑重构为独立方法，支持基本类型自动装箱。
+- DbLog 更新类注释。
 
 3.1.8:
 - 修复SMQ在Java 11下的编译问题，调整MappedByteBuffer清理方式。

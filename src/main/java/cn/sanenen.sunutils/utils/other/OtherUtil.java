@@ -27,8 +27,9 @@ public class OtherUtil {
      * @param total   总的进度值
      */
     public static void printSimpleProgress(int current, int total) {
+        checkProgressArgs(current, total);
         // 计算百分比，使用 double 避免整数除法
-        double percentage = (double) current / total;
+        double percentage = (double) Math.min(current, total) / total;
 
         // 定义进度条总长度
         final int barLength = 50;
@@ -63,16 +64,14 @@ public class OtherUtil {
      * @param startTime 进度条开始时间
      */
     public static void printProgressWithETA(int current, int total, long startTime) {
-        if (current == 0) {
-            startTime = System.currentTimeMillis();
-        }
+        checkProgressArgs(current, total);
 
-        double percentage = (double) current / total;
+        double percentage = (double) Math.min(current, total) / total;
         long currentTimeMillis = System.currentTimeMillis();
         long elapsedMillis = currentTimeMillis - startTime;
 
         // 计算预估总耗时（毫秒）
-        long estimatedTotalMillis = (long) (elapsedMillis / percentage);
+        long estimatedTotalMillis = current == 0 ? 0 : (long) (elapsedMillis / percentage);
         // 计算预估剩余耗时（毫秒）
         long remainingMillis = estimatedTotalMillis - elapsedMillis;
 
@@ -106,6 +105,15 @@ public class OtherUtil {
 
         if (current >= total) {
             System.out.println(); // 换行
+        }
+    }
+
+    private static void checkProgressArgs(int current, int total) {
+        if (total <= 0) {
+            throw new IllegalArgumentException("total must be greater than 0");
+        }
+        if (current < 0) {
+            throw new IllegalArgumentException("current must not be negative");
         }
     }
 }

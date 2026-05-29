@@ -6,6 +6,16 @@ package cn.sanenen.sunutils.utils.other;
  * @date 2021-11-10
  **/
 public class ByteUtil extends cn.hutool.core.util.ByteUtil {
+
+	private static byte[] emptyIfNull(byte[] bytes) {
+		return bytes == null ? Emptys.BYTES : bytes;
+	}
+
+	private static void checkLength(int len) {
+		if (len < 0) {
+			throw new IllegalArgumentException("len must not be negative");
+		}
+	}
 	
 	/**
 	 * 从 guava 复制过来的。
@@ -17,13 +27,18 @@ public class ByteUtil extends cn.hutool.core.util.ByteUtil {
 	 * @return 一个数组，按顺序包含源数组中的所有值
 	 */
 	public static byte[] concat(byte[]... arrays) {
+		if (arrays == null) {
+			return Emptys.BYTES;
+		}
 		int length = 0;
 		for (byte[] array : arrays) {
+			array = emptyIfNull(array);
 			length += array.length;
 		}
 		byte[] result = new byte[length];
 		int pos = 0;
 		for (byte[] array : arrays) {
+			array = emptyIfNull(array);
 			System.arraycopy(array, 0, result, pos, array.length);
 			pos += array.length;
 		}
@@ -37,8 +52,10 @@ public class ByteUtil extends cn.hutool.core.util.ByteUtil {
 	 * @return 结果
 	 */
 	public static byte[] rFillBytes(byte[] src, int len) {
+		checkLength(len);
+		src = emptyIfNull(src);
 		if (src.length == len) {
-			return src;
+			return src.clone();
 		} else {
 			byte[] copy = new byte[len];
 			System.arraycopy(src, 0, copy, 0, Math.min(src.length, len));
@@ -52,8 +69,10 @@ public class ByteUtil extends cn.hutool.core.util.ByteUtil {
 	 * @return 结果
 	 */
 	public static byte[] lFillBytes(byte[] src, int len) {
+		checkLength(len);
+		src = emptyIfNull(src);
 		if (src.length == len) {
-			return src;
+			return src.clone();
 		} else if (src.length > len) {
 			byte[] tmp = new byte[len];
 			System.arraycopy(src, 0, tmp, 0, len);
@@ -71,6 +90,7 @@ public class ByteUtil extends cn.hutool.core.util.ByteUtil {
 	 * @return 结果
 	 */
 	public static byte[] rtrimBytes(byte[] src) {
+		src = emptyIfNull(src);
 		int i = src.length - 1;
 		for (; i >= 0; i--) {
 			if (src[i] != 0) {
@@ -78,7 +98,7 @@ public class ByteUtil extends cn.hutool.core.util.ByteUtil {
 			}
 		}
 		if (i == src.length - 1) {
-			return src;
+			return src.clone();
 		}
 		if (i == -1) {
 			return new byte[0];
@@ -94,6 +114,7 @@ public class ByteUtil extends cn.hutool.core.util.ByteUtil {
 	 * @return 结果
 	 */
 	public static byte[] ltrimBytes(byte[] src) {
+		src = emptyIfNull(src);
 		int i = 0;
 		for (; i < src.length; i++) {
 			if (src[i] != 0) {
@@ -104,7 +125,7 @@ public class ByteUtil extends cn.hutool.core.util.ByteUtil {
 			return new byte[0];
 		}
 		if (i == 0) {
-			return src;
+			return src.clone();
 		}
 		byte[] tmp = new byte[src.length - i];
 		System.arraycopy(src, i, tmp, 0, src.length - i);
