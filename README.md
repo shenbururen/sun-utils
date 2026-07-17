@@ -5,10 +5,16 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>3.1.9</version>
+    <version>3.2.0</version>
 </dependency>
 ```
 ### 更新日志
+
+3.2.0:
+- SMQ 的 SQueue 改为独立读锁、写锁与文件切换锁，允许一个生产者与一个消费者并发推进。
+- 修复读文件滚动时的恢复顺序：新 readerIndex 同步落盘后才异步删除旧数据文件，避免异常退出后消息不可消费。
+- 增加跨文件滚动的多生产者、多消费者完整性测试，验证消息不丢失、不重复且内容一致。
+- 增加大工作量队列基准：单场景累计写入 6,050,000 条 100B 消息，并记录测试硬件与三轮结果。
 
 3.1.9:
 - ByteArrayMultipartFile 增加 null 防御，transferTo 自动创建父目录。

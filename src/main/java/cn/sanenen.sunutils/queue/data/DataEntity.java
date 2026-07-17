@@ -47,9 +47,9 @@ public class DataEntity {
 	private int currentFileNumber;
 
 	private final int fileLimitLength;
-	private int readerPosition = DataEntity.DATA_START_POSITION;
-	private int writerPosition = DataEntity.DATA_START_POSITION;
-	private int endPosition = -1;
+	private volatile int readerPosition = DataEntity.DATA_START_POSITION;
+	private volatile int writerPosition = DataEntity.DATA_START_POSITION;
+	private volatile int endPosition = -1;
 
 
 	public DataEntity(String path, int fileNumber,
@@ -94,45 +94,60 @@ public class DataEntity {
 	}
 
 	public byte[] readNextAndRemove() throws FileEOFException {
+		int readPosition = readerPosition;
+		int writePosition = writerPosition;
+		int fileEndPosition = endPosition;
 		//当前文件已写满，判断是否已经读完。
-		if (this.endPosition != -1 && this.readerPosition >= this.endPosition) {
+		if (fileEndPosition != -1 && readPosition >= fileEndPosition) {
 			throw new FileEOFException("file eof");
 		}
 		//当前文件还未写满，判断是否已经读完。
-		if (this.endPosition == -1 && this.readerPosition >= this.writerPosition) {
+		if (fileEndPosition == -1 && readPosition >= writePosition) {
 			return null;
 		}
-		readerBuffer.position(this.readerPosition);
+		int limitPosition = fileEndPosition == -1 ? writePosition : fileEndPosition;
+		if (readPosition < DATA_START_POSITION || readPosition + 4 > limitPosition || readPosition + 4 > fileLimitLength) throw new IllegalStateException("data file reader position error");
+		readerBuffer.position(readPosition);
 		int length = readerBuffer.getInt();
-		int limitPosition = this.endPosition == -1 ? this.writerPosition : this.endPosition;
-		if (length < 0 || this.readerPosition + 4 + length > limitPosition || this.readerPosition + 4 + length > this.fileLimitLength) {
+		if (length < 0 || readPosition + 4 + length > limitPosition || readPosition + 4 + length > fileLimitLength) {
 			throw new IllegalStateException("data file message length error");
 		}
 		byte[] b = new byte[length];
 		readerBuffer.get(b);
 
-		readerPosition += length + 4;
+		readerPosition = readPosition + length + 4;
 		readerBuffer.position(12);
 		readerBuffer.putInt(readerPosition);
 		return b;
 	}
 
 	public byte write(byte[] data) {
+		byte status = write(data, () -> { });
+		if (status == WRITE_FULL) finishWriting();
+		return status;
+	}
+
+	public byte write(byte[] data, Runnable beforePublish) {
 		int increment = data.length + 4;
 		if (isFull(increment)) {
-			mappedByteBuffer.position(20);
-			mappedByteBuffer.putInt(writerPosition);
-			endPosition = writerPosition;
 			return WRITE_FULL;
 		}
 		writerBuffer.position(writerPosition);
 		writerBuffer.putInt(data.length);
 		writerBuffer.put(data);
 		
-		writerPosition += increment;
+		int nextWriterPosition = writerPosition + increment;
 		writerBuffer.position(16);
-		writerBuffer.putInt(writerPosition);
+		writerBuffer.putInt(nextWriterPosition);
+		beforePublish.run();
+		writerPosition = nextWriterPosition;
 		return WRITE_SUCCESS;
+	}
+
+	public void finishWriting() {
+		mappedByteBuffer.position(20);
+		mappedByteBuffer.putInt(writerPosition);
+		endPosition = writerPosition;
 	}
 
 	private boolean isFull(int increment) {

@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
 
 /**
  * 根据<a href="https://github.com/tietang/fqueue">...</a>项目改造而来。
- * 相较于fqueue 读写使用同一把锁，改为 读写 使用各自的锁，切换数据文件时，使用同一把锁。
+ * 相较于fqueue 读写使用同一把锁，改为 读写 使用各自的锁（3.2.0版本），切换数据文件时，使用同一把锁。
  * 性能提升大概百分之20。
  * <p>
  * 内嵌本地持久化的高性能队列,主要解决内存队列（ConcurrentLinkedQueue）不能持久化的问题。

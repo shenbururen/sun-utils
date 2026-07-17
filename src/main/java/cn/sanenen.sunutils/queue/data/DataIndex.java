@@ -119,6 +119,11 @@ public class DataIndex {
 		size.decrementAndGet();
 	}
 
+	/** 同步持久化索引位置，供文件删除前建立崩溃恢复边界。 */
+	public void force() {
+		mappedByteBuffer.force();
+	}
+
 	private class Sync implements Runnable {
 		@Override
 		public void run() {

@@ -8,6 +8,10 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SMQTest {
 	@Rule
@@ -71,6 +75,52 @@ public class SMQTest {
 		} finally {
 			entity.close();
 		}
+	}
+
+	@Test
+	public void sQueueKeepsEveryDistinctMessageDuringConcurrentReadWriteAndRotation() throws Exception {
+		SQueue queue = new SQueue(temporaryFolder.newFolder("concurrent").getAbsolutePath(), 128);
+		int producers = 4;
+		int perProducer = 500;
+		int total = producers * perProducer;
+		CountDownLatch start = new CountDownLatch(1);
+		CountDownLatch finished = new CountDownLatch(producers);
+		Set<String> received = ConcurrentHashMap.newKeySet();
+		AtomicInteger consumed = new AtomicInteger();
+		Thread[] consumers = new Thread[4];
+		for (int c = 0; c < consumers.length; c++) {
+			consumers[c] = new Thread(() -> {
+				try {
+					start.await();
+					while (consumed.get() < total || finished.getCount() > 0) {
+						byte[] value = queue.readNextAndRemove();
+						if (value != null) {
+							Assert.assertTrue("消息重复", received.add(new String(value, StandardCharsets.UTF_8)));
+							consumed.incrementAndGet();
+						} else Thread.yield();
+					}
+				} catch (Exception e) { throw new RuntimeException(e); }
+			});
+			consumers[c].start();
+		}
+		Thread[] writers = new Thread[producers];
+		for (int p = 0; p < producers; p++) {
+			final int id = p;
+			writers[p] = new Thread(() -> {
+				try { start.await(); for (int i = 0; i < perProducer; i++) queue.add((id + "-" + i).getBytes(StandardCharsets.UTF_8)); }
+				catch (Exception e) { throw new RuntimeException(e); }
+				finally { finished.countDown(); }
+			});
+			writers[p].start();
+		}
+		start.countDown();
+		for (Thread writer : writers) writer.join(10_000);
+		for (Thread consumer : consumers) { consumer.join(10_000); Assert.assertFalse("消费者未完成", consumer.isAlive()); }
+		try {
+			Assert.assertEquals(total, consumed.get());
+			Assert.assertEquals(total, received.size());
+			for (int p = 0; p < producers; p++) for (int i = 0; i < perProducer; i++) Assert.assertTrue(received.contains(p + "-" + i));
+		} finally { queue.close(); }
 	}
 
 	private static class DataEntityAccessor {

@@ -26,15 +26,18 @@ public class SQueue {
 	/**
 	 * 文件操作实例
 	 */
-	private DataEntity writerHandle;
-	private DataEntity readerHandle;
+	private volatile DataEntity writerHandle;
+	private volatile DataEntity readerHandle;
 	/**
 	 * 文件操作位置信息
 	 */
 	private int readerIndex;
 	private int writerIndex;
 
-	private final Object lock = new Object();
+	private final Object writerLock = new Object();
+	private final Object readerLock = new Object();
+	private final Object transitionLock = new Object();
+	private volatile boolean closed;
 
 	protected SQueue(String path) throws Exception {
 		this(path, 1024 * 1024 * 50);
@@ -89,18 +92,31 @@ public class SQueue {
 	/**
 	 * 一个文件的数据写入达到fileLimitLength的时候，滚动到下一个文件实例
 	 */
-	private void rotateNextLogWriter() throws IOException, FileFormatException {
-		writerIndex = writerIndex + 1;
-		synchronized (lock) {
-			if (readerHandle != writerHandle) {
-				writerHandle.close();
-			}
+	private void rotateNextLogWriter(DataEntity writer) throws IOException, FileFormatException {
+		synchronized (transitionLock) {
+			writer.finishWriting();
+			writerIndex = writerIndex + 1;
 			db.putWriterIndex(writerIndex);
-			if (readerHandle.getCurrentFileNumber() == writerIndex){
-				writerHandle = readerHandle;
-			}else {
-				writerHandle = createLogEntity(getLogPath(writerIndex), writerIndex);
+			if (readerHandle != writer) {
+				writer.close();
 			}
+			writerHandle = createLogEntity(getLogPath(writerIndex), writerIndex);
+		}
+	}
+
+	private DataEntity rotateNextLogReader(DataEntity reader) throws IOException, FileFormatException {
+		synchronized (transitionLock) {
+			int deleteNum = reader.getCurrentFileNumber();
+			int nextFile = deleteNum + 1;
+			// 先同步提交新读索引。崩溃后即使旧文件尚未删除，也不会回退到它。
+			db.putReaderIndex(nextFile);
+			db.force();
+			reader.close();
+			FileRunner.addDeleteFile(getLogPath(deleteNum));
+			readerIndex = nextFile;
+			DataEntity writer = writerHandle;
+			readerHandle = writer.getCurrentFileNumber() == nextFile ? writer : createLogEntity(getLogPath(nextFile), nextFile);
+			return readerHandle;
 		}
 	}
 
@@ -113,47 +129,41 @@ public class SQueue {
 	 *
 	 * @param message 数据
 	 */
-	public synchronized void add(byte[] message) throws IOException, FileFormatException {
+	public void add(byte[] message) throws IOException, FileFormatException {
+		synchronized (writerLock) {
+			ensureOpen();
 		if (message == null) {
 			throw new IllegalArgumentException("message can not be null");
 		}
 		if (message.length + 4 > fileLimitLength - DataEntity.DATA_START_POSITION) {
 			throw new IllegalArgumentException("message length exceeds file limit");
 		}
-		short status = writerHandle.write(message);
+		DataEntity writer = writerHandle;
+		short status = writer.write(message, db::incrementSize);
 		if (status == DataEntity.WRITE_FULL) {
-			rotateNextLogWriter();
-			status = writerHandle.write(message);
+			rotateNextLogWriter(writer);
+			status = writerHandle.write(message, db::incrementSize);
 		}
-		if (status == DataEntity.WRITE_SUCCESS) {
-			db.incrementSize();
-		} else {
+		if (status != DataEntity.WRITE_SUCCESS) {
 			throw new IOException("write message failed");
+		}
 		}
 	}
 
 	/**
 	 * 从队列存储中取出最先入队的数据，并移除它
 	 */
-	public synchronized byte[] readNextAndRemove() throws IOException, FileFormatException {
+	public byte[] readNextAndRemove() throws IOException, FileFormatException {
+		synchronized (readerLock) {
+			ensureOpen();
+			DataEntity reader = readerHandle;
 		byte[] b = null;
 		try {
-			b = readerHandle.readNextAndRemove();
+			b = reader.readNextAndRemove();
 		} catch (FileEOFException e) {
-			int deleteNum = readerHandle.getCurrentFileNumber();
-			int nextFile = deleteNum + 1;
-			readerHandle.close();
-			FileRunner.addDeleteFile(getLogPath(deleteNum));
-			db.putReaderIndex(nextFile);
-			synchronized (lock) {
-				if (writerHandle.getCurrentFileNumber() == nextFile && writerHandle.getMappedByteBuffer() != null) {
-					readerHandle = writerHandle;
-				} else {
-					readerHandle = createLogEntity(getLogPath(nextFile), nextFile);
-				}
-			}
+			reader = rotateNextLogReader(reader);
 			try {
-				b = readerHandle.readNextAndRemove();
+				b = reader.readNextAndRemove();
 			} catch (FileEOFException e1) {
 				log.error("read new log file FileEOFException error occurred", e1);
 			}
@@ -162,16 +172,19 @@ public class SQueue {
 			db.decrementSize();
 		}
 		return b;
+		}
 	}
 
+	private void ensureOpen() { if (closed) throw new IllegalStateException("SQueue is closed"); }
+
 	public void close() {
-		db.close();
-		if (readerHandle != null) {
-			readerHandle.close();
-		}
-		if (writerHandle != null && writerHandle != readerHandle) {
-			writerHandle.close();
-		}
+		synchronized (writerLock) { synchronized (readerLock) { synchronized (transitionLock) {
+			if (closed) return;
+			closed = true;
+			db.close();
+			if (readerHandle != null) readerHandle.close();
+			if (writerHandle != null && writerHandle != readerHandle) writerHandle.close();
+		} } }
 	}
 
 	public long getQueueSize() {
