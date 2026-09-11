@@ -6,7 +6,7 @@
 
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>3.2.0</version>
+    <version>3.2.1</version>
     <packaging>jar</packaging>
 
     <name>sun-utils</name>
@@ -108,7 +108,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.83</version>
+            <version>1.2.83_noneautotype</version>
             <optional>true</optional>
         </dependency>
         <!-- AsyncBlockedThreadPoolExecutor 依赖 -->

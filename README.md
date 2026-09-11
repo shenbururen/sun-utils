@@ -5,10 +5,13 @@
 <dependency>
     <groupId>cn.sanenen</groupId>
     <artifactId>sun-utils</artifactId>
-    <version>3.2.0</version>
+    <version>3.2.1</version>
 </dependency>
 ```
 ### 更新日志
+
+3.2.1:
+- fastjson 依赖更换为 1.2.83_noneautotype 版本，禁用 autoType，消除反序列化漏洞扫描告警，现有用法不受影响。
 
 3.2.0:
 - SMQ 的 SQueue 改为独立读锁、写锁与文件切换锁，允许一个生产者与一个消费者并发推进。
@@ -36,6 +39,7 @@
 
 3.1.6:
 - ExcelHandler 头遍历修复
+- poi-ooxml 升级到 5.4.1（补记，当时遗漏）
 
 3.1.5:
 - 修改SMQ的注释，修改idea警告。
